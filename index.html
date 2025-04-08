@@ -1,7 +1,46 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Pollen Dashboard</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
+    img { max-width: 90%; border-radius: 16px; box-shadow: 0 0 20px #aaa; }
+  </style>
+</head>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+  <h1>🌼 Live Pollen Device Image</h1>
+  <p id="status">Loading image...</p>
+  <img id="deviceImage" src="" alt="Device image" />
+
+  <script>
+    const API_URL = "https://pollen.botondhorvath.com/api/devices";
+
+    async function loadImage() {
+      const status = document.getElementById("status");
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+
+        // Adjust this part based on the actual API response structure
+        const device = data[0]; // or find the device you want
+        const imageUrl = device.latest_image_url || device.image || device.photo_url; // replace with actual key
+
+        if (imageUrl) {
+          document.getElementById("deviceImage").src = `${imageUrl}?cb=${Date.now()}`;
+          status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        } else {
+          status.textContent = "No image found in API response.";
+        }
+
+      } catch (err) {
+        console.error("Error fetching image:", err);
+        status.textContent = "Error fetching data.";
+      }
+    }
+
+    loadImage();
+    setInterval(loadImage, 10000); // refresh every 10s
+  </script>
 </body>
 </html>
