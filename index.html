@@ -88,7 +88,7 @@
         // Check if the data is an array and contains any image items
         if (Array.isArray(data) && data.length > 0) {
             // Get the latest image from the last item in the array (or you can sort by timestamp)
-            const latestImage = data[data.length - 1]; // Get the most recent image from the end of the array
+            const latestImage = data[0]; // Get the most recent image from the end of the array
 
             if (latestImage && latestImage.image) {
                 // Get the image element by ID and update its src attribute to the new image
