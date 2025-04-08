@@ -120,18 +120,25 @@
 
 
 
-    function updateImageHistory(imageFiles) {
-      const historyElement = document.getElementById("imageHistory");
-      historyElement.innerHTML = ''; // Clear current list
+function updateImageHistory(imageFiles) {
+    const historyElement = document.getElementById("imageHistory");
+    historyElement.innerHTML = ''; // Clear current list
 
-      // Update history (timestamp from the latest image)
-      imageFiles.forEach(file => {
+    // Sort the image files by timestamp (most recent first)
+    imageFiles.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Get the most recent 5 entries (or fewer if less than 5 images exist)
+    const recentImages = imageFiles.slice(0, 5);
+
+    // Loop through the most recent images and add them to the history
+    recentImages.forEach(file => {
         const timestamp = file.timestamp;
         const li = document.createElement("li");
         li.textContent = new Date(timestamp).toLocaleString();
         historyElement.appendChild(li);
-      });
-    }
+    });
+}
+
 
     function updatePollenCount() {
       const pollenCountElement = document.getElementById("pollenCount");
