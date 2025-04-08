@@ -1,46 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Pollen Dashboard</title>
-  <meta charset="UTF-8">
   <style>
-    body { font-family: sans-serif; text-align: center; background: #f0f8ff; }
-    img { max-width: 90%; border-radius: 16px; box-shadow: 0 0 20px #aaa; }
+    body {
+      font-family: sans-serif;
+      background: #f8f9fa;
+      text-align: center;
+      padding: 2em;
+    }
+    h1 {
+      margin-bottom: 1em;
+    }
+    img {
+      max-width: 90%;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    #status {
+      margin: 1em 0;
+      font-size: 0.9em;
+      color: #666;
+    }
   </style>
 </head>
 <body>
-  <h1>🌼 Live Pollen Device Image</h1>
-  <p id="status">Loading image...</p>
-  <img id="deviceImage" src="" alt="Device image" />
+  <h1>🌼 Latest Pollen Image</h1>
+  <p id="status">Loading latest image...</p>
+  <img id="latestImage" src="" alt="Latest image" />
 
   <script>
-    const API_URL = "https://pollen.botondhorvath.com/api/devices";
+    const GITHUB_API = "https://api.github.com/repos/pollen-project/Dashboard/contents/photo";
 
-    async function loadImage() {
+    async function loadLatestImage() {
       const status = document.getElementById("status");
       try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
+        const res = await fetch(GITHUB_API);
+        const files = await res.json();
 
-        // Adjust this part based on the actual API response structure
-        const device = data[0]; // or find the device you want
-        const imageUrl = device.latest_image_url || device.image || device.photo_url; // replace with actual key
+        const imageFiles = files
+          .filter(file => file.name.match(/\.(jpg|jpeg|png)$/i))
+          .sort((a, b) => b.name.localeCompare(a.name)); // assumes filenames have time-based naming
 
-        if (imageUrl) {
-          document.getElementById("deviceImage").src = `${imageUrl}?cb=${Date.now()}`;
+        if (imageFiles.length > 0) {
+          const latestImage = imageFiles[0].download_url;
+          const img = document.getElementById("latestImage");
+          img.src = `${latestImage}?cb=${Date.now()}`; // bust cache
           status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
         } else {
-          status.textContent = "No image found in API response.";
+          status.textContent = "No images found in the /photo folder.";
         }
-
       } catch (err) {
-        console.error("Error fetching image:", err);
-        status.textContent = "Error fetching data.";
+        console.error(err);
+        status.textContent = "Error loading image from GitHub.";
       }
     }
 
-    loadImage();
-    setInterval(loadImage, 10000); // refresh every 10s
+    loadLatestImage();
+    setInterval(loadLatestImage, 10000); // refresh every 10s
   </script>
 </body>
 </html>
