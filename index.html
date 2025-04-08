@@ -13,52 +13,146 @@
     h1 {
       margin-bottom: 1em;
     }
+
+    /* Container to organize the boxes */
+    .container {
+      display: grid;
+      grid-template-columns: 2fr 1fr; /* Latest image 2/3 and the left section 1/3 */
+      gap: 2em;
+    }
+
+    /* Left section with history and pollen count */
+    .left {
+      display: flex;
+      flex-direction: column;
+      gap: 2em;
+    }
+
+    /* Box styles */
+    .box {
+      padding: 1.5em;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Image styles */
     img {
-      max-width: 90%;
+      max-width: 100%;
       border-radius: 16px;
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
     }
-    #status {
+
+    /* Timestamp and status text */
+    #status, .timestamp {
       margin: 1em 0;
       font-size: 0.9em;
       color: #666;
     }
+
+    /* Styling for the pollen count box */
+    .pollen-count {
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #4CAF50;
+    }
+
+    ul {
+    list-style-type: none;  /* Removes the default bullet points */
+    padding: 0;             /* Removes padding around the list */
+    margin: 0;              /* Removes any margin */
+    }
+
+
   </style>
 </head>
 <body>
-  <h1>🌼 Latest Pollen Image</h1>
-  <p id="status">Loading latest image...</p>
-  <img id="latestImage" src="" alt="Latest image" />
+  <h1> Pollen Dashboard</h1>
+  
+  <div class="container">
+    <!-- Left Section: Image History and Estimated Pollen Count -->
+    <div class="left">
+      <!-- Image History Box -->
+      <div class="box">
+        <h2>Image History</h2>
+        <ul id="imageHistory">
+          <!-- List of timestamps will be displayed here -->
+        </ul>
+      </div>
+
+      <!-- Estimated Pollen Count Box -->
+      <div class="box">
+        <h2>Estimated Pollen Count</h2>
+        <p id="pollenCount" class="pollen-count">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Latest Image Box (takes 2/3 of the width) -->
+    <div class="box">
+      <h2>Latest Pollen Image</h2>
+      <p id="status">Loading latest image...</p>
+      <img id="latestImage" src="" alt="Latest pollen image" />
+    </div>
+  </div>
 
   <script>
-    const GITHUB_API = "https://api.github.com/repos/pollen-project/Dashboard/contents/photo";
+    const PHOTO_FOLDER = "http://localhost:8080/photos";  // Path to the photo folder served over HTTP
 
-    async function loadLatestImage() {
-      const status = document.getElementById("status");
-      try {
-        const res = await fetch(GITHUB_API);
-        const files = await res.json();
+async function loadLatestImage() {
+  const status = document.getElementById("status");
+  try {
+    // Fetch the files.json that contains a list of images
+    const response = await fetch(`${PHOTO_FOLDER}/files.json`);
+    const files = await response.json();
 
-        const imageFiles = files
-          .filter(file => file.name.match(/\.(jpg|jpeg|png)$/i))
-          .sort((a, b) => b.name.localeCompare(a.name)); // assumes filenames have time-based naming
+    // Filter the image files based on extensions (jpg, jpeg, png)
+    const imageFiles = files
+      .filter(file => file.name.match(/\.(jpg|jpeg|png)$/i))
+      .sort((a, b) => b.name.localeCompare(a.name)); // Sort files by name (time-based naming)
 
-        if (imageFiles.length > 0) {
-          const latestImage = imageFiles[0].download_url;
-          const img = document.getElementById("latestImage");
-          img.src = `${latestImage}?cb=${Date.now()}`; // bust cache
-          status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
-        } else {
-          status.textContent = "No images found in the /photo folder.";
-        }
-      } catch (err) {
-        console.error(err);
-        status.textContent = "Error loading image from GitHub.";
-      }
+    if (imageFiles.length > 0) {
+      const latestImage = imageFiles[0].url;
+      const img = document.getElementById("latestImage");
+      img.src = `${latestImage}?cb=${Date.now()}`; // Add a cache-busting query parameter
+      status.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+
+      // Update image history
+      updateImageHistory(imageFiles);
+    } else {
+      status.textContent = "No images found in the /photos folder.";
     }
+  } catch (err) {
+    console.error(err);
+    status.textContent = "Error loading image from the local /photos folder.";
+  }
+}
 
-    loadLatestImage();
-    setInterval(loadLatestImage, 10000); // refresh every 10s
+function updateImageHistory(imageFiles) {
+  const historyElement = document.getElementById("imageHistory");
+  historyElement.innerHTML = ''; // Clear current list
+
+  const lastTenFiles = imageFiles.slice(0, 10); // Get the last 10 images
+  lastTenFiles.forEach(file => {
+    const timestamp = file.name.match(/image_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})/);
+    if (timestamp) {
+      const li = document.createElement("li");
+      li.textContent = timestamp[1];
+      historyElement.appendChild(li);
+    }
+  });
+}
+
+function updatePollenCount() {
+  const pollenCountElement = document.getElementById("pollenCount");
+  const fakeCount = Math.floor(Math.random() * 100); // Generate a random pollen count (placeholder)
+  pollenCountElement.textContent = `${fakeCount} particles/m³`;
+}
+
+loadLatestImage();
+updatePollenCount();
+setInterval(loadLatestImage, 10000); // refresh every 10s
+setInterval(updatePollenCount, 30000); // refresh pollen count every 30s
+
   </script>
 </body>
 </html>
