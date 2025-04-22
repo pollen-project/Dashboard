@@ -48,15 +48,22 @@
   <!-- Temp & Humidity  -->
   <h1>Temprature & Humidity </h1>
   <div id="charts-container">
+
     
-    <div id="tempChartContainer" style="width: 48%; padding: 10px;">
-      <canvas id="tempChart"></canvas>
-      <p id="latestTemp">Latest Temp: --°C</p>
+    <div id="tempChartContainer" >
+      <section class="card">
+        <p id="latestTemp">Latest Temp: --°C</p>
+        <canvas id="tempChart"></canvas>
+      </section>
     </div>
     
-    <div id="humidityChartContainer" style="width: 48%; padding: 10px;">
-      <canvas id="humidityChart"></canvas>
-      <p id="latestHumidity">Latest Humidity: --%</p>
+
+    
+    <div id="humidityChartContainer">
+      <section class="card">
+        <p id="latestHumidity">Latest Humidity: --%</p>
+        <canvas id="humidityChart"></canvas> 
+      </section>
     </div>
   </div>
   

@@ -159,8 +159,8 @@ async function updateTempHumidityChart() {
       const humidityData = data.map(entry => entry.humidity);
 
       // Display the latest temperature and humidity
-      const latestTemp = tempData[tempData.length - 1];
-      const latestHumidity = humidityData[humidityData.length - 1];
+      const latestTemp = tempData[0];
+      const latestHumidity = humidityData[0];
       document.getElementById("latestTemp").textContent = `Latest Temp: ${latestTemp}°C`;
       document.getElementById("latestHumidity").textContent = `Latest Humidity: ${latestHumidity}%`;
 
@@ -170,8 +170,10 @@ async function updateTempHumidityChart() {
       // Update Humidity Chart
       updateHumidityChart(labels, humidityData);
 
-      // Handle GPS Coordinates
-      updateMapWithGPS(data[0].gps);
+      if (shouldUpdateMapToday()) {
+        updateMapWithGPS(data[0].gps);
+        markMapUpdated();
+      }
     }
   } catch (err) {
     status.textContent = "Error loading temperature, humidity, or GPS data from the API.";
@@ -297,6 +299,16 @@ function updateMap(lat, lon) {
   map.setView([lat, lon], 13);
 }
 
+function shouldUpdateMapToday() {
+    const lastUpdate = localStorage.getItem('mapLastUpdate');
+    const today = new Date().toDateString();
+    return lastUpdate !== today;
+}
+  
+function markMapUpdated() {
+    const today = new Date().toDateString();
+    localStorage.setItem('mapLastUpdate', today);
+  }
 // Initializing
 loadLatestImage();
 updatePollenCount();
