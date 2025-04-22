@@ -1,66 +1,259 @@
-const API_URL = 'https://your-api-endpoint.com/images'; // Replace with your actual API URL
+const API_URL = "https://pollen.botondhorvath.com/api/history?device=pollen3";
+const pollenData = [];
+let tempHumidityChart;
+let chart;
 
 async function loadLatestImage() {
-    const status = document.getElementById("status");
+  const status = document.getElementById("status");
+  const imageStatus = document.getElementById("imageStatus");
 
-    try {
-        // Fetch the latest image data from the API
-        const res = await fetch(API_URL);
+  try {
+    const res = await fetch(API_URL);
 
-        // Log response status and headers to debug any potential issues
-        console.log('Response Status:', res.status);
-        console.log('Response Headers:', res.headers);
-
-        // Check if response is OK (status code 200-299)
-        if (!res.ok) {
-            console.error(`API responded with error: ${res.statusText}`);
-            status.textContent = `Error: API responded with status ${res.status}`;
-            return;
-        }
-
-        // Parse the JSON response
-        const data = await res.json();
-        console.log('API Response Data:', data);  // Log the full response body
-
-        // Check if the data is an array and contains any image items
-        if (Array.isArray(data) && data.length > 0) {
-            // Get the latest image from the last item in the array (or you can sort by timestamp)
-            const latestImage = data[data.length - 1]; // Get the most recent image from the end of the array
-
-            if (latestImage && latestImage.image) {
-                const img = document.getElementById("latestImage");
-                img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`; // URL of the image served by your CDN
-                status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
-
-                // Update image history (you can extend this part to track more images)
-                updateImageHistory(data);  // You could update the history with the full array or just the latest
-            } else {
-                console.warn('No image field in the latest data:', latestImage);
-                status.textContent = "No image data found in the API.";
-            }
-        } else {
-            console.warn('The API did not return an array or is empty:', data);
-            status.textContent = "No images found in the API.";
-        }
-
-    } catch (err) {
-        // Log the error and update the status
-        console.error('Error during API call:', err);
-        status.textContent = "Error loading image from the API.";
+    if (!res.ok) {
+      status.textContent = `Error: API responded with status ${res.status}`;
+      return;
     }
+
+    const data = await res.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+      const latestImage = data[0];
+
+      if (latestImage && latestImage.image) {
+        const img = document.getElementById("latestImage");
+        img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
+        status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
+        updateImageHistory(data);
+      } else {
+        status.textContent = "No image data found in the API.";
+      }
+    } else {
+      status.textContent = "No images found in the API.";
+    }
+  } catch (err) {
+    status.textContent = "Error loading image from the API.";
+  }
 }
 
-// Function to update image history
-function updateImageHistory(data) {
-    const historyList = document.getElementById("image-history");
-    historyList.innerHTML = '';  // Clear the history before updating
+function updateImageHistory(imageFiles) {
+  const historyElement = document.getElementById("imageHistory");
+  historyElement.innerHTML = '';
 
-    data.forEach(item => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `Image: ${item.image} - Updated at: ${new Date(item.timestamp).toLocaleTimeString()}`;
-        historyList.appendChild(listItem);
+  // Sort and limit to latest 5
+  imageFiles.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const recentImages = imageFiles.slice(0, 11);
+
+  recentImages.forEach(file => {
+    const li = document.createElement("li");
+    li.textContent = new Date(file.timestamp).toLocaleString();
+    li.style.cursor = 'pointer';
+    li.title = "Click to view this image";
+
+    // On click, update the main image and status
+    li.addEventListener("click", () => {
+      const img = document.getElementById("latestImage");
+      img.src = `https://pollen.botondhorvath.com/images/${file.image}`;
+      document.getElementById("status").textContent = `Viewing image from: ${new Date(file.timestamp).toLocaleString()}`;
     });
+
+    historyElement.appendChild(li);
+  });
 }
 
-// Load the latest image on page load
-window.onload = loadLatestImage;
+function updatePollenCount() {
+  const pollenCountElement = document.getElementById("pollenCount");
+  const fakeCount = Math.floor(Math.random() * 50);
+  const timestamp = new Date();
+
+  pollenCountElement.textContent = `${fakeCount} particles/m³`;
+  pollenData.push({ time: timestamp, count: fakeCount });
+
+  // Keep only the latest 20 points
+  if (pollenData.length > 20) pollenData.shift();
+
+  updateChart();
+}
+
+function updateChart() {
+  const labels = pollenData.map(entry => entry.time.toLocaleTimeString());
+  const data = pollenData.map(entry => entry.count);
+
+  // Calculate average
+  const avg = data.reduce((sum, val) => sum + val, 0) / data.length;
+  const averageLine = new Array(data.length).fill(avg);
+
+  if (!chart) {
+    const ctx = document.getElementById("pollenChart").getContext("2d");
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Pollen Count',
+            data: data,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.3,
+            pointRadius: 2
+          },
+          {
+            label: 'Average',
+            data: averageLine,
+            borderColor: 'rgba(255, 99, 132, 0.8)',
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Time'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Particles/m³'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              boxWidth: 12,
+              padding: 10
+            }
+          }
+        }
+      }
+    });
+  } else {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    chart.data.datasets[1].data = averageLine;
+    chart.update();
+  }
+}
+
+let tempChart, humidityChart;
+
+async function updateTempHumidityChart() {
+  const status = document.getElementById("status");
+
+  try {
+    const res = await fetch(API_URL);
+
+    if (!res.ok) {
+      status.textContent = `Error: API responded with status ${res.status}`;
+      return;
+    }
+
+    const data = await res.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+      const labels = data.map(entry => new Date(entry.timestamp).toLocaleTimeString());
+      const tempData = data.map(entry => entry.temperature);
+      const humidityData = data.map(entry => entry.humidity);
+
+      // Display the latest values
+      const latestTemp = tempData[0];
+      const latestHumidity = humidityData[0];
+      document.getElementById("latestTemp").textContent = `Latest Temp: ${latestTemp}°C`;
+      document.getElementById("latestHumidity").textContent = `Latest Humidity: ${latestHumidity}%`;
+
+      // Temperature chart
+      if (!tempChart) {
+        const ctx = document.getElementById("tempChart").getContext("2d");
+        tempChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Temperature (°C)',
+                data: tempData,
+                borderColor: 'rgba(255, 159, 64, 1)',
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                tension: 0.3,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              x: {
+                title: { display: true, text: 'Time' },
+                reverse: true // Reverses the x-axis to show the most recent time on the left
+              },
+              y: {
+                beginAtZero: false,
+                title: { display: true, text: 'Temperature (°C)' }
+              }
+            }
+          }
+        });
+      } else {
+        tempChart.data.labels = labels;
+        tempChart.data.datasets[0].data = tempData;
+        tempChart.update();
+      }
+
+      // Humidity chart
+      if (!humidityChart) {
+        const ctx = document.getElementById("humidityChart").getContext("2d");
+        humidityChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Humidity (%)',
+                data: humidityData,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.3,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              x: {
+                title: { display: true, text: 'Time' },
+                reverse: true // Reverses the x-axis to show the most recent time on the left
+              },
+              y: {
+                beginAtZero: false,
+                title: { display: true, text: 'Humidity (%)' }
+              }
+            }
+          }
+        });
+      } else {
+        humidityChart.data.labels = labels;
+        humidityChart.data.datasets[0].data = humidityData;
+        humidityChart.update();
+      }
+    }
+  } catch (err) {
+    status.textContent = "Error loading temperature and humidity data from the API.";
+  }
+}
+
+
+
+loadLatestImage();
+updatePollenCount();
+updateTempHumidityChart();
+
+setInterval(loadLatestImage, 10000);
+setInterval(updatePollenCount, 30000);
+setInterval(updateTempHumidityChart, 30000);

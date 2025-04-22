@@ -1,72 +1,103 @@
-/* Basic reset */
-* {
+body {
     margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
+  
+  h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #2c3e50;
+  }
+  
+  .dashboard {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .side-panel {
+    flex: 1;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .image-wrapper {
+    flex: 2;
+    min-width: 300px;
+    position: relative;
+  }
+  
+  img#latestImage {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .image-status-top {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  ul {
+    list-style: none;
     padding: 0;
+    margin: 0;
+  }
+  
+  li {
+    padding: 0.5em;
+    margin: 0.2em 0;
+    background-color: #f1f3f5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  li:hover {
+    background-color: #dee2e6;
+  }
+
+  canvas {
+    width: 100% !important;
+    height: auto !important;
+  }  
+
+  #charts-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Adds some space between the two charts */
+}
+
+#tempChartContainer, #humidityChartContainer {
+    flex: 1;
+    min-width: 45%;
     box-sizing: border-box;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-.container {
-    display: flex;
-    max-width: 1200px;
-    width: 100%;
-}
-
-.left-panel, .right-panel {
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    margin: 0 10px;
-}
-
-.left-panel {
-    flex: 1;
-    max-width: 350px;
-}
-
-.right-panel {
-    flex: 2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-width: 800px;
-}
-
-h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-#status {
-    font-size: 16px;
-    color: #888;
-}
-
-ul {
-    list-style-type: none;
-}
-
-ul li {
-    background-color: #f9f9f9;
-    margin: 5px 0;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.latest-image {
-    max-width: 100%;
-    border-radius: 8px;
-    border: 2px solid #ddd;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}

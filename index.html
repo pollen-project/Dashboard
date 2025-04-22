@@ -3,153 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <title>Pollen Dashboard</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f8f9fa;
-      text-align: center;
-      padding: 2em;
-    }
-    h1 {
-      margin-bottom: 1em;
-    }
-    img {
-      max-width: 90%;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    }
-    #status {
-      margin: 1em 0;
-      font-size: 0.9em;
-      color: #666;
-    }
-    ul {
-      list-style-type: none;  /* Removes the default bullet points */
-      padding: 0;             /* Removes padding around the list */
-      margin: 0;              /* Removes any margin */
-    }
-    li {
-      font-size: 1.1em;
-      color: #333;
-      margin-bottom: 0.5em;
-    }
-  </style>
+
+  <!-- Link to external CSS file -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Link to Chart.js from CDN (needed for graphing) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1> Latest Pollen Image</h1>
-  <p id="status">Loading latest image...</p>
+  <main class="container">
+    <h1>Pollen Dashboard</h1>
 
-  <div style="display: flex; justify-content: space-between;">
-    <!-- Left side with history and pollen count -->
-    <div style="flex: 1; padding-right: 20px;">
-      <div id="historyBox">
-        <h2>Image History</h2>
-        <ul id="imageHistory"></ul>
+    <div class="dashboard">
+      <!-- Left Panel -->
+      <div class="side-panel">
+        <section class="card">
+          <h2>Image History</h2>
+          <ul id="imageHistory"></ul>
+        </section>
       </div>
 
-      <div id="pollenBox">
-        <h2>Pollen Count</h2>
-        <p id="pollenCount">Loading pollen count...</p>
+      <!-- Right Panel (Image + Status) -->
+      <div class="image-wrapper">
+        <img id="latestImage" alt="Latest Pollen Image" />
+        <p id="status" class="image-status-top">Loading image...</p>
       </div>
     </div>
 
-    <!-- Right side with latest image -->
-    <div style="flex: 2;">
-        <img id="latestImage" alt="Latest Pollen Image" />
-        <p id="status"></p>
+    <!-- Pollen Count  -->
+    <h1>Pollen Count</h1>
+    <div id="pollenBox">
+      <section class="card">
+        <p id="pollenCount">Loading pollen count...</p>
+        <canvas id="pollenChart" width="400" height="200"></canvas>
+      </section>  
+    </div>
+  
+
+  <div id="charts-container">
+    <div id="tempChartContainer" style="width: 48%; padding: 10px;">
+      <canvas id="tempChart"></canvas>
+      <p id="latestTemp">Latest Temp: --°C</p>
+    </div>
+    <div id="humidityChartContainer" style="width: 48%; padding: 10px;">
+      <canvas id="humidityChart"></canvas>
+      <p id="latestHumidity">Latest Humidity: --%</p>
     </div>
   </div>
+  
 
-  <script>
-    const API_URL = "https://pollen.botondhorvath.com/api/history?device=pollen3";  // Replace with your actual API endpoint
-
-    async function loadLatestImage() {
-    const status = document.getElementById("status");
-
-    try {
-        // Fetch the latest image data from the API
-        const res = await fetch(API_URL);
-
-        // Log response status and headers to debug any potential issues
-        console.log('Response Status:', res.status);
-        console.log('Response Headers:', res.headers);
-
-        // Check if response is OK (status code 200-299)
-        if (!res.ok) {
-            console.error(`API responded with error: ${res.statusText}`);
-            status.textContent = `Error: API responded with status ${res.status}`;
-            return;
-        }
-
-        // Parse the JSON response
-        const data = await res.json();
-        console.log('API Response Data:', data);  // Log the full response body
-
-        // Check if the data is an array and contains any image items
-        if (Array.isArray(data) && data.length > 0) {
-            // Get the latest image from the last item in the array (or you can sort by timestamp)
-            const latestImage = data[0]; // Get the most recent image from the end of the array
-
-            if (latestImage && latestImage.image) {
-                // Get the image element by ID and update its src attribute to the new image
-                const img = document.getElementById("latestImage");
-                img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`; // URL of the image served by your CDN
-
-                // Update the timestamp to reflect when the image was last updated
-                status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
-
-                // Optionally update image history (you can update this based on your use case)
-                updateImageHistory(data);  // For now, just updating with the full list, could be just the latest image
-
-            } else {
-                console.warn('No image field in the latest data:', latestImage);
-                status.textContent = "No image data found in the API.";
-            }
-        } else {
-            console.warn('The API did not return an array or is empty:', data);
-            status.textContent = "No images found in the API.";
-        }
-
-    } catch (err) {
-        // Log the error and update the status
-        console.error('Error during API call:', err);
-        status.textContent = "Error loading image from the API.";
-    }
-}
-
-
-
-
-function updateImageHistory(imageFiles) {
-    const historyElement = document.getElementById("imageHistory");
-    historyElement.innerHTML = ''; // Clear current list
-
-    // Sort the image files by timestamp (most recent first)
-    imageFiles.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    // Get the most recent 5 entries (or fewer if less than 5 images exist)
-    const recentImages = imageFiles.slice(0, 5);
-
-    // Loop through the most recent images and add them to the history
-    recentImages.forEach(file => {
-        const timestamp = file.timestamp;
-        const li = document.createElement("li");
-        li.textContent = new Date(timestamp).toLocaleString();
-        historyElement.appendChild(li);
-    });
-}
-
-
-    function updatePollenCount() {
-      const pollenCountElement = document.getElementById("pollenCount");
-      const fakeCount = Math.floor(Math.random() * 100); // Generate a random pollen count (placeholder)
-      pollenCountElement.textContent = `${fakeCount} particles/m³`;
-    }
-
-    loadLatestImage();
-    updatePollenCount();
-    setInterval(loadLatestImage, 10000); // refresh every 10s
-    setInterval(updatePollenCount, 30000); // refresh pollen count every 30s
-  </script>
+</main>>
+  <script src="script.js"></script>
 </body>
+
 </html>
