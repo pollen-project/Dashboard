@@ -9,6 +9,12 @@
 
   <!-- Link to Chart.js from CDN (needed for graphing) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Leaflet.js CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <!-- Leaflet.js JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
   <main class="container">
@@ -39,18 +45,29 @@
       </section>  
     </div>
   
-
+  <!-- Temp & Humidity  -->
+  <h1>Temprature & Humidity </h1>
   <div id="charts-container">
+    
     <div id="tempChartContainer" style="width: 48%; padding: 10px;">
       <canvas id="tempChart"></canvas>
       <p id="latestTemp">Latest Temp: --°C</p>
     </div>
+    
     <div id="humidityChartContainer" style="width: 48%; padding: 10px;">
       <canvas id="humidityChart"></canvas>
       <p id="latestHumidity">Latest Humidity: --%</p>
     </div>
   </div>
   
+  <!-- GPS -->
+  <h1>GPS </h1>
+  <div id="gpsCardContainer">
+    <h3>GPS Coordinates</h3>
+    <p id="gpsStatus">Loading GPS data...</p>
+    <div id="map" style="height: 400px;"></div> <!-- Map container -->
+  </div>
+
 
 </main>>
   <script src="script.js"></script>
