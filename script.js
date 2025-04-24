@@ -5,44 +5,57 @@ let chart;
 let tempChart, humidityChart;
 let map, marker;
 
+let lastImageFilename = null;
+
 async function loadLatestImage() {
-  const status = document.getElementById("status");
-
-  try {
-    const res = await fetch(API_URL);
-
-    if (!res.ok) {
-      status.textContent = `Error: API responded with status ${res.status}`;
-      return;
-    }
-
-    const data = await res.json();
-
-    if (Array.isArray(data) && data.length > 0) {
-      const latestImage = data[0];
-
-      if (latestImage && latestImage.image) {
-        const img = document.getElementById("latestImage");
-        img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
-        status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
-        updateImageHistory(data);
-      } else {
-        status.textContent = "No image data found in the API.";
+    const status = document.getElementById("status");
+  
+    try {
+      const res = await fetch(API_URL);
+  
+      if (!res.ok) {
+        status.textContent = `Error: API responded with status ${res.status}`;
+        return;
       }
-    } else {
-      status.textContent = "No images found in the API.";
+  
+      const data = await res.json();
+  
+      if (Array.isArray(data) && data.length > 0) {
+        const latestImage = data[0];
+  
+        if (latestImage && latestImage.image) {
+          // Only update if a new image was received
+          if (latestImage.image !== lastImageFilename) {
+            lastImageFilename = latestImage.image;
+  
+            const img = document.getElementById("latestImage");
+            img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
+  
+            // Update timestamp text
+            status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
+  
+            // Refresh history list
+            updateImageHistory(data);
+          }
+        } else {
+          status.textContent = "No image data found in the API.";
+        }
+      } else {
+        status.textContent = "No images found in the API.";
+      }
+    } catch (err) {
+      status.textContent = "Error loading image from the API.";
+      console.error(err);
     }
-  } catch (err) {
-    status.textContent = "Error loading image from the API.";
-    console.error(err);
   }
-}
+  
+
 
 function updateImageHistory(imageFiles) {
   const historyElement = document.getElementById("imageHistory");
   historyElement.innerHTML = '';
 
-  // Sort and limit to latest 5
+
   imageFiles.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const recentImages = imageFiles.slice(0, 11);
 
@@ -170,10 +183,9 @@ async function updateTempHumidityChart() {
       // Update Humidity Chart
       updateHumidityChart(labels, humidityData);
 
-      if (shouldUpdateMapToday()) {
-        updateMapWithGPS(data[0].gps);
-        markMapUpdated();
-      }
+
+      updateMapWithGPS(data[0].gps);
+
     }
   } catch (err) {
     status.textContent = "Error loading temperature, humidity, or GPS data from the API.";
@@ -181,6 +193,67 @@ async function updateTempHumidityChart() {
   }
 }
 
+async function loadFilteredImages() {
+    const fromInput = document.getElementById("fromDate")?.value;
+    const status = document.getElementById("status");
+    const img = document.getElementById("latestImage");
+  
+    if (!status || !img) {
+      console.error("Missing status or image elements in the DOM.");
+      return;
+    }
+  
+    if (!fromInput) {
+      status.textContent = "Please select a 'From' date.";
+      return;
+    }
+  
+    const fromDate = new Date(fromInput);
+    const untilDate = new Date(fromDate.getTime() + 15 * 60 * 1000); // +15 min
+  
+    const fromISO = fromDate.toISOString();
+    const untilISO = untilDate.toISOString();
+  
+    // Build the URL safely with query params
+    const url = new URL(API_URL);
+    url.searchParams.set("from", fromISO);
+    url.searchParams.set("until", untilISO);
+  
+    console.log("Fetching from:", url.toString());
+  
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        status.textContent = `Error: API responded with status ${res.status}`;
+        return;
+      }
+  
+      const data = await res.json();
+  
+      if (Array.isArray(data) && data.length > 0) {
+        const last11 = data.slice(-11);
+        const latestImage = last11[last11.length - 1];
+  
+        if (latestImage.image !== lastImageFilename) {
+          lastImageFilename = latestImage.image;
+          img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
+        }
+  
+        updateImageHistory(last11);
+        status.textContent = `Showing last 11 images from: ${fromInput}`;
+      } else {
+        status.textContent = "No images found for the selected time range.";
+      }
+    } catch (err) {
+      status.textContent = "An error occurred while loading images.";
+      console.error("Fetch error:", err);
+    }
+  }
+  
+  
+  
+  
+  
 function updateTemperatureChart(labels, tempData) {
   if (!tempChart) {
     const ctx = document.getElementById("tempChart").getContext("2d");
@@ -298,23 +371,74 @@ function updateMap(lat, lon) {
   // Adjust the view to fit the new marker
   map.setView([lat, lon], 13);
 }
+let imageInterval = null; // To hold the setInterval ID
+let vari = true;         // To toggle between true and false
 
-function shouldUpdateMapToday() {
-    const lastUpdate = localStorage.getItem('mapLastUpdate');
-    const today = new Date().toDateString();
-    return lastUpdate !== today;
-}
-  
-function markMapUpdated() {
-    const today = new Date().toDateString();
-    localStorage.setItem('mapLastUpdate', today);
+window.onload = function() {
+    updateButtonColor(); // Set initial button color to green
+    if (vari) {
+      startLoadingImages(); // Start image loading if 'vari' is true
+    }
   }
+// The function that toggles the state of 'vari' and controls the image loading
+function toggleLoadLatest() {
+  vari = !vari; // Switch the state of 'vari' between true and false
+
+  if (vari) {
+    // Start the interval if 'vari' is true
+    startLoadingImages();
+  } else {
+    // Clear the interval and stop the loading if 'vari' is false
+    stopLoadingImages();
+  }
+
+  // Change the button color based on the state of 'vari'
+  updateButtonColor();
+}
+
+// Starts the interval to load images every 10 seconds
+function startLoadingImages() {
+  console.log("starting loading...")
+  if (!imageInterval) { // Prevent multiple intervals from running at the same time
+    
+    imageInterval = setInterval(loadLatestImage, 10000);
+    console.log("setting interval")
+  }
+}
+
+// Stops the image loading interval
+function stopLoadingImages() {
+    console.log("stopping loading")
+  if (imageInterval) {
+    clearInterval(imageInterval);
+    console.log("clearing interval")
+    imageInterval = null;
+  }
+}
+
+
+// Function to update the button color based on 'vari' state
+function updateButtonColor() {
+  const button = document.getElementById('toggleButton');
+  
+  if (vari) {
+    // If the update is on, make the button green
+    button.style.backgroundColor = 'green';
+    button.style.color = 'white';
+  } else {
+    // If the update is off, make the button red
+    button.style.backgroundColor = 'red';
+    button.style.color = 'white';
+  }
+}
+
+
+
 // Initializing
 loadLatestImage();
 updatePollenCount();
 updateTempHumidityChart();
 
 // Set intervals for auto-refreshing data
-setInterval(loadLatestImage, 10000);
 setInterval(updatePollenCount, 30000);
 setInterval(updateTempHumidityChart, 30000);
