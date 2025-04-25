@@ -8,47 +8,47 @@ let map, marker;
 let lastImageFilename = null;
 
 async function loadLatestImage() {
-    const status = document.getElementById("status");
-  
-    try {
-      const res = await fetch(API_URL);
-  
-      if (!res.ok) {
-        status.textContent = `Error: API responded with status ${res.status}`;
-        return;
-      }
-  
-      const data = await res.json();
-  
-      if (Array.isArray(data) && data.length > 0) {
-        const latestImage = data[0];
-  
-        if (latestImage && latestImage.image) {
-          // Only update if a new image was received
-          if (latestImage.image !== lastImageFilename) {
-            lastImageFilename = latestImage.image;
-  
-            const img = document.getElementById("latestImage");
-            img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
-  
-            // Update timestamp text
-            status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
-  
-            // Refresh history list
-            updateImageHistory(data);
-          }
-        } else {
-          status.textContent = "No image data found in the API.";
+  const status = document.getElementById("status");
+
+  try {
+    const res = await fetch(API_URL);
+
+    if (!res.ok) {
+      status.textContent = `Error: API responded with status ${res.status}`;
+      return;
+    }
+
+    const data = await res.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+      const latestImage = data[0];
+
+      if (latestImage && latestImage.image) {
+        // Only update if a new image was received
+        if (latestImage.image !== lastImageFilename) {
+          lastImageFilename = latestImage.image;
+
+          const img = document.getElementById("latestImage");
+          img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
+
+          // Update timestamp text
+          status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
+
+          // Refresh history list
+          updateImageHistory(data);
         }
       } else {
-        status.textContent = "No images found in the API.";
+        status.textContent = "No image data found in the API.";
       }
-    } catch (err) {
-      status.textContent = "Error loading image from the API.";
-      console.error(err);
+    } else {
+      status.textContent = "No images found in the API.";
     }
+  } catch (err) {
+    status.textContent = "Error loading image from the API.";
+    console.error(err);
   }
-  
+}
+
 
 
 function updateImageHistory(imageFiles) {
@@ -76,26 +76,80 @@ function updateImageHistory(imageFiles) {
   });
 }
 
-function updatePollenCount() {
-  const pollenCountElement = document.getElementById("pollenCount");
-  const fakeCount = Math.floor(Math.random() * 50);
-  const timestamp = new Date();
+let isInitialLoad = true;
 
-  pollenCountElement.textContent = `${fakeCount} particles/m³`;
-  pollenData.push({ time: timestamp, count: fakeCount });
+async function updatePollenCount() {
+  const API_URL = "https://pollen.botondhorvath.com/api/history?device=pollen3";
 
-  // Keep only the latest 20 points
-  if (pollenData.length > 20) pollenData.shift();
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-  updateChart();
+    console.log("Full API response:", data);
+
+    if (isInitialLoad) {
+      // Load the last 20 readings into pollenData
+      
+      const first20Data = data.slice(0, 20); // Slice first 20 entries
+
+    // Reverse the data manually without using reverse()
+    const reversedData = [];
+    for (let i = first20Data.length - 1; i >= 0; i--) {
+      reversedData.push(first20Data[i]);
+    }
+
+      pollenData.splice(0, pollenData.length, ...reversedData.map(entry => {
+        const rawCount = entry.detectedPollenCount;
+        console.log("Raw pollen count:", rawCount); // Check what it logs for debugging
+  
+        const count = !isNaN(Number(rawCount)) ? Number(rawCount) : 0; // Fallback to 0 if invalid
+        return {
+          time: new Date(entry.timestamp),
+          count: count
+        };
+      }));
+      isInitialLoad = false;
+    } else {
+      // Add just the latest reading
+      const latest = data[0]; // or data[data.length - 1] depending on order
+      const newEntry = {
+        time: new Date(latest.timestamp),
+        count: Number(latest.detectedPollenCount)
+      };
+
+      pollenData.push(newEntry);
+      if (pollenData.length > 20) pollenData.shift();
+    }
+
+    // Update display
+    const pollenCountElement = document.getElementById("pollenCount");
+    const latestCount = pollenData[pollenData.length - 1].count;
+    pollenCountElement.textContent = `${latestCount} particles/m³`;
+
+    updateChart();
+
+  } catch (err) {
+    status.textContent = "Error loading data from the API.";
+    console.error(err);
+  }
 }
 
+
+
 function updateChart() {
+  // Use only the last 20 entries
+  const recentData = pollenData.slice(-20);
+  console.log(recentData);
+
   const labels = pollenData.map(entry => entry.time.toLocaleTimeString());
   const data = pollenData.map(entry => entry.count);
 
-  // Calculate average
-  const avg = data.reduce((sum, val) => sum + val, 0) / data.length;
+  console.log("Labels:", labels);
+  console.log("Data:", data);
+
+
+
+  const avg = data.length ? data.reduce((sum, val) => sum + val, 0) / data.length : 0;
   const averageLine = new Array(data.length).fill(avg);
 
   if (!chart) {
@@ -126,21 +180,11 @@ function updateChart() {
       options: {
         responsive: true,
         scales: {
-          x: {
-            title: { display: true, text: 'Time' }
-          },
-          y: {
-            beginAtZero: true,
-            title: { display: true, text: 'Particles/m³' }
-          }
+          x: { title: { display: true, text: 'Time' } },
+          y: { beginAtZero: true, title: { display: true, text: 'Particles/m³' } }
         },
         plugins: {
-          legend: {
-            labels: {
-              boxWidth: 12,
-              padding: 10
-            }
-          }
+          legend: { labels: { boxWidth: 12, padding: 10 } }
         }
       }
     });
@@ -148,9 +192,11 @@ function updateChart() {
     chart.data.labels = labels;
     chart.data.datasets[0].data = data;
     chart.data.datasets[1].data = averageLine;
+
     chart.update();
   }
 }
+
 
 async function updateTempHumidityChart() {
   const status = document.getElementById("status");
@@ -194,66 +240,66 @@ async function updateTempHumidityChart() {
 }
 
 async function loadFilteredImages() {
-    const fromInput = document.getElementById("fromDate")?.value;
-    const status = document.getElementById("status");
-    const img = document.getElementById("latestImage");
-  
-    if (!status || !img) {
-      console.error("Missing status or image elements in the DOM.");
-      return;
-    }
-  
-    if (!fromInput) {
-      status.textContent = "Please select a 'From' date.";
-      return;
-    }
-  
-    const fromDate = new Date(fromInput);
-    const untilDate = new Date(fromDate.getTime() + 15 * 60 * 1000); // +15 min
-  
-    const fromISO = fromDate.toISOString();
-    const untilISO = untilDate.toISOString();
-  
-    // Build the URL safely with query params
-    const url = new URL(API_URL);
-    url.searchParams.set("from", fromISO);
-    url.searchParams.set("until", untilISO);
-  
-    console.log("Fetching from:", url.toString());
-  
-    try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        status.textContent = `Error: API responded with status ${res.status}`;
-        return;
-      }
-  
-      const data = await res.json();
-  
-      if (Array.isArray(data) && data.length > 0) {
-        const last11 = data.slice(-11);
-        const latestImage = last11[last11.length - 1];
-  
-        if (latestImage.image !== lastImageFilename) {
-          lastImageFilename = latestImage.image;
-          img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
-        }
-  
-        updateImageHistory(last11);
-        status.textContent = `Showing last 11 images from: ${fromInput}`;
-      } else {
-        status.textContent = "No images found for the selected time range.";
-      }
-    } catch (err) {
-      status.textContent = "An error occurred while loading images.";
-      console.error("Fetch error:", err);
-    }
+  const fromInput = document.getElementById("fromDate")?.value;
+  const status = document.getElementById("status");
+  const img = document.getElementById("latestImage");
+
+  if (!status || !img) {
+    console.error("Missing status or image elements in the DOM.");
+    return;
   }
-  
-  
-  
-  
-  
+
+  if (!fromInput) {
+    status.textContent = "Please select a 'From' date.";
+    return;
+  }
+
+  const fromDate = new Date(fromInput);
+  const untilDate = new Date(fromDate.getTime() + 15 * 60 * 1000); // +15 min
+
+  const fromISO = fromDate.toISOString();
+  const untilISO = untilDate.toISOString();
+
+  // Build the URL safely with query params
+  const url = new URL(API_URL);
+  url.searchParams.set("from", fromISO);
+  url.searchParams.set("until", untilISO);
+
+  console.log("Fetching from:", url.toString());
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      status.textContent = `Error: API responded with status ${res.status}`;
+      return;
+    }
+
+    const data = await res.json();
+
+    if (Array.isArray(data) && data.length > 0) {
+      const last11 = data.slice(-11);
+      const latestImage = last11[last11.length - 1];
+
+      if (latestImage.image !== lastImageFilename) {
+        lastImageFilename = latestImage.image;
+        img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
+      }
+
+      updateImageHistory(last11);
+      status.textContent = `Showing last 11 images from: ${fromInput}`;
+    } else {
+      status.textContent = "No images found for the selected time range.";
+    }
+  } catch (err) {
+    status.textContent = "An error occurred while loading images.";
+    console.error("Fetch error:", err);
+  }
+}
+
+
+
+
+
 function updateTemperatureChart(labels, tempData) {
   if (!tempChart) {
     const ctx = document.getElementById("tempChart").getContext("2d");
@@ -331,25 +377,25 @@ function updateHumidityChart(labels, humidityData) {
 }
 
 function updateMapWithGPS(gps) {
-    const gpsStatus = document.getElementById("gpsStatus");
-  
-    let lat, lon;
-  
-    if (gps && typeof gps.latitude === "number" && typeof gps.longitude === "number") {
-      lat = gps.latitude;
-      lon = gps.longitude;
-      gpsStatus.textContent = `Latitude: ${lat}, Longitude: ${lon}`;
-    } else {
-      // Generate random coordinates for testing (within Europe)
-      lat =  Math.random()*50;     // 47 to 48
-      lon =  Math.random()*50;     // 19 to 20
-      gpsStatus.textContent = `Random Test Location: Latitude: ${lat.toFixed(5)}, Longitude: ${lon.toFixed(5)}`;
-      console.warn('Using random GPS coordinates for testing.');
-    }
-  
-    updateMap(lat, lon);
+  const gpsStatus = document.getElementById("gpsStatus");
+
+  let lat, lon;
+
+  if (gps && typeof gps.latitude === "number" && typeof gps.longitude === "number") {
+    lat = gps.latitude;
+    lon = gps.longitude;
+    gpsStatus.textContent = `Latitude: ${lat}, Longitude: ${lon}`;
+  } else {
+    // Generate random coordinates for testing (within Europe)
+    lat = Math.random() * 50;     // 47 to 48
+    lon = Math.random() * 50;     // 19 to 20
+    gpsStatus.textContent = `Random Test Location: Latitude: ${lat.toFixed(5)}, Longitude: ${lon.toFixed(5)}`;
+    console.warn('Using random GPS coordinates for testing.');
   }
-  
+
+  updateMap(lat, lon);
+}
+
 
 function updateMap(lat, lon) {
   if (!map) {
@@ -374,12 +420,12 @@ function updateMap(lat, lon) {
 let imageInterval = null; // To hold the setInterval ID
 let vari = true;         // To toggle between true and false
 
-window.onload = function() {
-    updateButtonColor(); // Set initial button color to green
-    if (vari) {
-      startLoadingImages(); // Start image loading if 'vari' is true
-    }
+window.onload = function () {
+  updateButtonColor(); // Set initial button color to green
+  if (vari) {
+    startLoadingImages(); // Start image loading if 'vari' is true
   }
+}
 // The function that toggles the state of 'vari' and controls the image loading
 function toggleLoadLatest() {
   vari = !vari; // Switch the state of 'vari' between true and false
@@ -400,7 +446,7 @@ function toggleLoadLatest() {
 function startLoadingImages() {
   console.log("starting loading...")
   if (!imageInterval) { // Prevent multiple intervals from running at the same time
-    
+
     imageInterval = setInterval(loadLatestImage, 10000);
     console.log("setting interval")
   }
@@ -408,7 +454,7 @@ function startLoadingImages() {
 
 // Stops the image loading interval
 function stopLoadingImages() {
-    console.log("stopping loading")
+  console.log("stopping loading")
   if (imageInterval) {
     clearInterval(imageInterval);
     console.log("clearing interval")
@@ -420,7 +466,7 @@ function stopLoadingImages() {
 // Function to update the button color based on 'vari' state
 function updateButtonColor() {
   const button = document.getElementById('toggleButton');
-  
+
   if (vari) {
     // If the update is on, make the button green
     button.style.backgroundColor = 'green';
