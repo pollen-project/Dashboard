@@ -42,12 +42,12 @@
         </section>
       </div>
 
-      <!-- Right Panel (Image + Status) -->
-      <div class="image-wrapper">
-        <img id="latestImage" alt="Latest Pollen Image" />
+      <div style="position: relative; display: inline-block;" class="image-wrapper">
+        <img id="latestImage" alt="Latest Pollen Image" style="width: 100%; display: block;" />
+        <canvas id="boundingCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+        <input type="checkbox" onclick="toggleBoundingBoxes()">Turn Off Bounding Boxes</button>
         <p id="status" class="image-status-top">Loading image...</p>
       </div>
-    </div>
 
     <!-- Pollen Count  -->
     <h1>Pollen Count</h1>
