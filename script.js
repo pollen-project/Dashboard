@@ -62,6 +62,7 @@ function updateImageHistory(imageFiles) {
 
   imageFiles.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const recentImages = imageFiles.slice(0, 11);
+  console.log(recentImages.timestamp)
 
   recentImages.forEach(file => {
       const li = document.createElement("li");
@@ -138,7 +139,7 @@ async function updatePollenCount() {
     const res = await fetch(API_URL);
     const data = await res.json();
 
-    console.log("Full API response:", data);
+    
 
     if (isInitialLoad) {
       // Load the last 20 readings into pollenData
@@ -153,7 +154,7 @@ async function updatePollenCount() {
 
       pollenData.splice(0, pollenData.length, ...reversedData.map(entry => {
         const rawCount = entry.detectedPollenCount;
-        console.log("Raw pollen count:", rawCount); // Check what it logs for debugging
+        
   
         const count = !isNaN(Number(rawCount)) ? Number(rawCount) : 0; // Fallback to 0 if invalid
         return {
@@ -196,11 +197,6 @@ function updateChart() {
 
   const labels = pollenData.map(entry => entry.time.toLocaleTimeString());
   const data = pollenData.map(entry => entry.count);
-
-  console.log("Labels:", labels);
-  console.log("Data:", data);
-
-
 
   const avg = data.length ? data.reduce((sum, val) => sum + val, 0) / data.length : 0;
   const averageLine = new Array(data.length).fill(avg);
@@ -306,17 +302,10 @@ async function loadFilteredImages() {
     }
   
     const fromDate = new Date(fromInput);
-    const untilDate = new Date(fromDate.getTime() + 15 * 60 * 1000); // +15 min
-  
     const fromISO = fromDate.toISOString();
-    const untilISO = untilDate.toISOString();
-  
     // Build the URL safely with query params
     const url = new URL(API_URL);
     url.searchParams.set("from", fromISO);
-    url.searchParams.set("until", untilISO);
-  
-    console.log("Fetching from:", url.toString());
   
     try {
         const res = await fetch(url);

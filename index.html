@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Pollen Dashboard</title>
@@ -16,6 +17,7 @@
   <!-- Leaflet.js JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
+
 <body>
   <main class="container">
     <h1>Pollen Dashboard</h1>
@@ -28,15 +30,15 @@
             <h2>Image History</h2>
             <button id="toggleButton" onclick="toggleLoadLatest()">Toggle Update</button>
           </div>
-        
+
 
           <div class="filter-controls">
             <label for="fromDate">From:</label>
             <input type="datetime-local" id="fromDate">
-            
+
             <button onclick="loadFilteredImages()">Filter</button>
           </div>
-          
+
 
           <ul id="imageHistory"></ul>
         </section>
@@ -48,54 +50,54 @@
         <input type="checkbox" onclick="toggleBoundingBoxes()">Turn Off Bounding Boxes</button>
         <p id="status" class="image-status-top">Loading image...</p>
       </div>
-
-    <!-- Pollen Count  -->
-    <h1>Pollen Count</h1>
-    <div id="pollenBox">
-      <section class="card">
-        <p id="pollenCount">Loading pollen count...</p>
-        <canvas id="pollenChart" width="400" height="200"></canvas>
-      </section>  
     </div>
-  
-  <!-- Temp & Humidity  -->
-  <h1>Temprature & Humidity </h1>
-  <div id="charts-container">
 
-    
-    <div id="tempChartContainer" >
-      <section class="card">
-        <p id="latestTemp">Latest Temp: --°C</p>
-        <canvas id="tempChart"></canvas>
-      </section>
-    </div>
-    
+      <!-- Pollen Count  -->
+      <h1>Pollen Count</h1>
+      <div id="pollenBox">
+        <section class="card">
+          <p id="pollenCount">Loading pollen count...</p>
+          <canvas id="pollenChart" width="400" height="200"></canvas>
+        </section>
+      </div>
 
-    
-    <div id="humidityChartContainer">
-      <section class="card">
-        <p id="latestHumidity">Latest Humidity: --%</p>
-        <canvas id="humidityChart"></canvas> 
-      </section>
-    </div>
-  </div>
-  
-  <!-- GPS -->
-  <h1>GPS </h1>
-
-  <div id="gpsCardContainer">
-    <section class="card">
-      <h3>GPS Coordinates</h3>
-      <p id="gpsStatus">Loading GPS data...</p>
-      <div id="map" style="height: 400px; width: 400px;" ></div> <!-- Map container -->
-    </section>
-  </div>
+      <!-- Temp & Humidity  -->
+      <h1>Temprature & Humidity </h1>
+      <div id="charts-container">
 
 
-  
+        <div id="tempChartContainer">
+          <section class="card">
+            <p id="latestTemp">Latest Temp: --°C</p>
+            <canvas id="tempChart"></canvas>
+          </section>
+        </div>
 
-</main>>
+
+
+        <div id="humidityChartContainer">
+          <section class="card">
+            <p id="latestHumidity">Latest Humidity: --%</p>
+            <canvas id="humidityChart"></canvas>
+          </section>
+        </div>
+      </div>
+
+      <!-- GPS -->
+      <h1>GPS </h1>
+
+      <div id="gpsCardContainer" >
+        <section class="card">
+          <h3>GPS Coordinates</h3>
+          <p id="gpsStatus">Loading GPS data...</p>
+          <div id="map" style="height: 400px;"></div> <!-- Map container -->
+        </section>
+      </div>
+
+
+
+
+  </main>>
   <script src="script.js"></script>
 </body>
 
-</html>
