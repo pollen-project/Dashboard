@@ -62,7 +62,6 @@ function updateImageHistory(imageFiles) {
 
   imageFiles.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   const recentImages = imageFiles.slice(0, 11);
-  console.log(recentImages.timestamp)
 
   recentImages.forEach(file => {
       const li = document.createElement("li");
@@ -198,6 +197,7 @@ function updateChart() {
   const labels = pollenData.map(entry => entry.time.toLocaleTimeString());
   const data = pollenData.map(entry => entry.count);
 
+
   const avg = data.length ? data.reduce((sum, val) => sum + val, 0) / data.length : 0;
   const averageLine = new Array(data.length).fill(avg);
 
@@ -302,10 +302,17 @@ async function loadFilteredImages() {
     }
   
     const fromDate = new Date(fromInput);
+    const untilDate = new Date(fromDate.getTime() + 15 * 60 * 1000); // +15 min
+  
     const fromISO = fromDate.toISOString();
+    const untilISO = untilDate.toISOString();
+  
     // Build the URL safely with query params
     const url = new URL(API_URL);
     url.searchParams.set("from", fromISO);
+    url.searchParams.set("until", untilISO);
+  
+    console.log("Fetching from:", url.toString());
   
     try {
         const res = await fetch(url);
