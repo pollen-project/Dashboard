@@ -13,7 +13,6 @@ let canvas, ctx;
 let canvasVisible = true;
 
 async function loadLatestImage() {
-<<<<<<< Updated upstream
   const status = document.getElementById("status");
 
   try {
@@ -56,48 +55,6 @@ async function loadLatestImage() {
 }
 
 
-=======
-    const status = document.getElementById("status");
-  
-    try {
-        const res = await fetch(API_URL);
-    
-        if (!res.ok) {
-            status.textContent = `Error: API responded with status ${res.status}`;
-            return;
-        }
-    
-        const data = await res.json();
-    
-        if (Array.isArray(data) && data.length > 0) {
-            const latestImage = data[0];
-    
-            if (latestImage && latestImage.image) {
-                // Only update if a new image was received
-                if (latestImage.image !== lastImageFilename) {
-                    lastImageFilename = latestImage.image;
-    
-                    const img = document.getElementById("latestImage");
-                    img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
-    
-                    // Update timestamp text
-                    status.textContent = `Last updated: ${new Date(latestImage.timestamp).toLocaleTimeString()}`;
-    
-                    // Refresh history list
-                    updateImageHistory(data);
-                }
-            } else {
-                status.textContent = "No image data found in the API.";
-            }
-        } else {
-            status.textContent = "No images found in the API.";
-        }
-    } catch (err) {
-        status.textContent = "Error loading image from the API.";
-        console.error(err);
-    }
-}
->>>>>>> Stashed changes
 
 function updateImageHistory(imageFiles) {
   const historyElement = document.getElementById("imageHistory");
@@ -172,7 +129,6 @@ function updateImageHistory(imageFiles) {
   });
 }
 
-<<<<<<< Updated upstream
 let isInitialLoad = true;
 
 async function updatePollenCount() {
@@ -229,26 +185,11 @@ async function updatePollenCount() {
     status.textContent = "Error loading data from the API.";
     console.error(err);
   }
-=======
-function updatePollenCount() {
-    const pollenCountElement = document.getElementById("pollenCount");
-    const fakeCount = Math.floor(Math.random() * 50);
-    const timestamp = new Date();
-
-    pollenCountElement.textContent = `${fakeCount} particles/m³`;
-    pollenData.push({ time: timestamp, count: fakeCount });
-
-    // Keep only the latest 20 points
-    if (pollenData.length > 20) pollenData.shift();
-
-    updateChart();
->>>>>>> Stashed changes
 }
 
 
 
 function updateChart() {
-<<<<<<< Updated upstream
   // Use only the last 20 entries
   const recentData = pollenData.slice(-20);
   console.log(recentData);
@@ -307,67 +248,6 @@ function updateChart() {
 
     chart.update();
   }
-=======
-    const labels = pollenData.map(entry => entry.time.toLocaleTimeString());
-    const data = pollenData.map(entry => entry.count);
-
-    // Calculate average
-    const avg = data.reduce((sum, val) => sum + val, 0) / data.length;
-    const averageLine = new Array(data.length).fill(avg);
-
-    if (!chart) {
-        const ctx = document.getElementById("pollenChart").getContext("2d");
-        chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Pollen Count',
-                        data: data,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.3,
-                        pointRadius: 2
-                    },
-                    {
-                        label: 'Average',
-                        data: averageLine,
-                        borderColor: 'rgba(255, 99, 132, 0.8)',
-                        borderDash: [5, 5],
-                        pointRadius: 0,
-                        fill: false
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    x: {
-                        title: { display: true, text: 'Time' }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Particles/m³' }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            boxWidth: 12,
-                            padding: 10
-                        }
-                    }
-                }
-            }
-        });
-    } else {
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = data;
-        chart.data.datasets[1].data = averageLine;
-        chart.update();
-    }
->>>>>>> Stashed changes
 }
 
 
@@ -411,68 +291,6 @@ async function updateTempHumidityChart() {
 }
 
 async function loadFilteredImages() {
-<<<<<<< Updated upstream
-  const fromInput = document.getElementById("fromDate")?.value;
-  const status = document.getElementById("status");
-  const img = document.getElementById("latestImage");
-
-  if (!status || !img) {
-    console.error("Missing status or image elements in the DOM.");
-    return;
-  }
-
-  if (!fromInput) {
-    status.textContent = "Please select a 'From' date.";
-    return;
-  }
-
-  const fromDate = new Date(fromInput);
-  const untilDate = new Date(fromDate.getTime() + 15 * 60 * 1000); // +15 min
-
-  const fromISO = fromDate.toISOString();
-  const untilISO = untilDate.toISOString();
-
-  // Build the URL safely with query params
-  const url = new URL(API_URL);
-  url.searchParams.set("from", fromISO);
-  url.searchParams.set("until", untilISO);
-
-  console.log("Fetching from:", url.toString());
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      status.textContent = `Error: API responded with status ${res.status}`;
-      return;
-    }
-
-    const data = await res.json();
-
-    if (Array.isArray(data) && data.length > 0) {
-      const last11 = data.slice(-11);
-      const latestImage = last11[last11.length - 1];
-
-      if (latestImage.image !== lastImageFilename) {
-        lastImageFilename = latestImage.image;
-        img.src = `https://pollen.botondhorvath.com/images/${latestImage.image}`;
-      }
-
-      updateImageHistory(last11);
-      status.textContent = `Showing last 11 images from: ${fromInput}`;
-    } else {
-      status.textContent = "No images found for the selected time range.";
-    }
-  } catch (err) {
-    status.textContent = "An error occurred while loading images.";
-    console.error("Fetch error:", err);
-  }
-}
-
-
-
-
-
-=======
     const fromInput = document.getElementById("fromDate")?.value;
     const status = document.getElementById("status");
     const img = document.getElementById("latestImage");
@@ -529,7 +347,6 @@ async function loadFilteredImages() {
     }
 }
 
->>>>>>> Stashed changes
 function updateTemperatureChart(labels, tempData) {
     if (!tempChart) {
         const ctx = document.getElementById("tempChart").getContext("2d");
@@ -607,27 +424,6 @@ function updateHumidityChart(labels, humidityData) {
 }
 
 function updateMapWithGPS(gps) {
-<<<<<<< Updated upstream
-  const gpsStatus = document.getElementById("gpsStatus");
-
-  let lat, lon;
-
-  if (gps && typeof gps.latitude === "number" && typeof gps.longitude === "number") {
-    lat = gps.latitude;
-    lon = gps.longitude;
-    gpsStatus.textContent = `Latitude: ${lat}, Longitude: ${lon}`;
-  } else {
-    // Generate random coordinates for testing (within Europe)
-    lat = Math.random() * 50;     // 47 to 48
-    lon = Math.random() * 50;     // 19 to 20
-    gpsStatus.textContent = `Random Test Location: Latitude: ${lat.toFixed(5)}, Longitude: ${lon.toFixed(5)}`;
-    console.warn('Using random GPS coordinates for testing.');
-  }
-
-  updateMap(lat, lon);
-}
-
-=======
     const gpsStatus = document.getElementById("gpsStatus");
   
     let lat, lon;
@@ -646,7 +442,6 @@ function updateMapWithGPS(gps) {
   
     updateMap(lat, lon);
 }
->>>>>>> Stashed changes
 
 function updateMap(lat, lon) {
     if (!map) {
@@ -672,38 +467,6 @@ function updateMap(lat, lon) {
 let imageInterval = null; // To hold the setInterval ID
 let vari = true;         // To toggle between true and false
 
-<<<<<<< Updated upstream
-window.onload = function () {
-  updateButtonColor(); // Set initial button color to green
-  if (vari) {
-    startLoadingImages(); // Start image loading if 'vari' is true
-  }
-}
-// The function that toggles the state of 'vari' and controls the image loading
-function toggleLoadLatest() {
-  vari = !vari; // Switch the state of 'vari' between true and false
-
-  if (vari) {
-    // Start the interval if 'vari' is true
-    startLoadingImages();
-  } else {
-    // Clear the interval and stop the loading if 'vari' is false
-    stopLoadingImages();
-  }
-
-  // Change the button color based on the state of 'vari'
-  updateButtonColor();
-}
-
-// Starts the interval to load images every 10 seconds
-function startLoadingImages() {
-  console.log("starting loading...")
-  if (!imageInterval) { // Prevent multiple intervals from running at the same time
-
-    imageInterval = setInterval(loadLatestImage, 10000);
-    console.log("setting interval")
-  }
-=======
 window.onload = function() {
     updateButtonColor(); // Set initial button color to green
     if (vari) {
@@ -743,41 +506,18 @@ function startLoadingImages() {
         imageInterval = setInterval(loadLatestImage, 10000);
         console.log("setting interval")
     }
->>>>>>> Stashed changes
 }
 
 function stopLoadingImages() {
-<<<<<<< Updated upstream
-  console.log("stopping loading")
-  if (imageInterval) {
-    clearInterval(imageInterval);
-    console.log("clearing interval")
-    imageInterval = null;
-  }
-=======
     console.log("stopping loading")
     if (imageInterval) {
         clearInterval(imageInterval);
         console.log("clearing interval")
         imageInterval = null;
     }
->>>>>>> Stashed changes
 }
 
 function updateButtonColor() {
-<<<<<<< Updated upstream
-  const button = document.getElementById('toggleButton');
-
-  if (vari) {
-    // If the update is on, make the button green
-    button.style.backgroundColor = 'green';
-    button.style.color = 'white';
-  } else {
-    // If the update is off, make the button red
-    button.style.backgroundColor = 'red';
-    button.style.color = 'white';
-  }
-=======
     const button = document.getElementById('toggleButton');
   
     if (vari) {
@@ -789,7 +529,6 @@ function updateButtonColor() {
         button.style.backgroundColor = 'red';
         button.style.color = 'white';
     }
->>>>>>> Stashed changes
 }
 
 function setupCanvas() {
