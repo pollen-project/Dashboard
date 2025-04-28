@@ -41,6 +41,7 @@ async function loadLatestImage() {
 
           // Refresh history list
           updateImageHistory(data);
+          updatePollenCount();
         }
       } else {
         status.textContent = "No image data found in the API.";
@@ -70,60 +71,50 @@ function updateImageHistory(imageFiles) {
       li.title = "Click to view this image";
   
       li.addEventListener("click", () => {
-          const img = document.getElementById("latestImage");
-          img.src = `https://pollen.botondhorvath.com/images/${file.image}`;
-          document.getElementById("status").textContent = `Viewing image from: ${new Date(file.timestamp).toLocaleString()}`;
-
-          // Clear existing bounding boxes
-          boundingBoxes = [];
-          redrawCanvas();
-
-          // Only process detections if they exist and are non-empty
-          if (file.detections && file.detections.length > 0) {
-              img.onload = () => {
-                  setTimeout(() => {
-                      boundingBoxes = []; // Clear previous boxes
-                      redrawCanvas();
-                  
-                      const scaleX = canvas.width / img.naturalWidth;
-                      const scaleY = canvas.height / img.naturalHeight;
-                  
-                      file.detections.forEach(detection => {
-                          try {
-                              // Skip if detection string is empty or null
-                            
-                              
-                              
-                              
-                              // Skip if box data is missing or invalid
-                              if (!detection?.box || 
-                                  !detection.box.x1 || !detection.box.x2 || 
-                                  !detection.box.y1 || !detection.box.y2) {
-                                  return;
-                              }
-                              
-                              const box = detection.box;
-                              const x = box.x1 * scaleX;
-                              const y = box.y1 * scaleY;
-                              const width = (box.x2 - box.x1) * scaleX;
-                              const height = (box.y2 - box.y1) * scaleY;
-                  
-                              boundingBoxes.push({ x, y, width, height });
-                          } catch (e) {
-                              console.warn("Invalid detection data:", detectionStr, e);
-                          }
-                      });
-                  
-                      redrawCanvas();
-                  }, 100);
-              };
-          } else {
-              // No detections available for this image
-              console.log("No detections found for this image");
-              boundingBoxes = [];
-              redrawCanvas();
-          }
-      });
+        const img = document.getElementById("latestImage");
+        img.src = `https://pollen.botondhorvath.com/images/${file.image}`;
+        document.getElementById("status").textContent = `Viewing image from: ${new Date(file.timestamp).toLocaleString()}`;
+    
+        // Clear existing bounding boxes immediately
+        boundingBoxes = [];
+        redrawCanvas();
+    
+        img.onload = () => {
+            // Clear boxes again just to be sure after image load
+            boundingBoxes = [];
+            redrawCanvas();
+    
+            // Only process detections if they exist and are non-empty
+            if (file.detections && file.detections.length > 0) {
+                const scaleX = canvas.width / img.naturalWidth;
+                const scaleY = canvas.height / img.naturalHeight;
+    
+                file.detections.forEach(detection => {
+                    try {
+                        if (!detection?.box || 
+                            detection.box.x1 == null || detection.box.x2 == null || 
+                            detection.box.y1 == null || detection.box.y2 == null) {
+                            return;
+                        }
+                        
+                        const box = detection.box;
+                        const x = box.x1 * scaleX;
+                        const y = box.y1 * scaleY;
+                        const width = (box.x2 - box.x1) * scaleX;
+                        const height = (box.y2 - box.y1) * scaleY;
+    
+                        boundingBoxes.push({ x, y, width, height });
+                    } catch (e) {
+                        console.warn("Invalid detection data:", detection, e);
+                    }
+                });
+    
+                redrawCanvas();
+            } else {
+                console.log("No detections found for this image");
+            }
+        };
+    });
   
       historyElement.appendChild(li);
   });
@@ -472,11 +463,11 @@ window.onload = function() {
     
     // Initial data load
     loadLatestImage();
-    updatePollenCount();
+    
     updateTempHumidityChart();
 
     // Set intervals for auto-refreshing data
-    setInterval(updatePollenCount, 30000);
+    
     setInterval(updateTempHumidityChart, 30000);
 }
 

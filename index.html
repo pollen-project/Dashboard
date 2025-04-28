@@ -47,9 +47,18 @@
       <div style="position: relative; display: inline-block;" class="image-wrapper">
         <img id="latestImage" alt="Latest Pollen Image" style="width: 100%; display: block;" />
         <canvas id="boundingCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
-        <input type="checkbox" onclick="toggleBoundingBoxes()">Turn Off Bounding Boxes</button>
         <p id="status" class="image-status-top">Loading image...</p>
+      
+        <div class="toggle-wrapper">
+          <span class="toggle-label">BBox Toggle</span>
+          <label class="switch">
+            <input type="checkbox" id="toggleBoxes" onclick="toggleBoundingBoxes()" checked>
+            <span class="slider round"></span>
+          </label>
+        </div>
       </div>
+      
+      
     </div>
 
       <!-- Pollen Count  -->
