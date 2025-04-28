@@ -88,12 +88,12 @@ function updateImageHistory(imageFiles) {
                       const scaleX = canvas.width / img.naturalWidth;
                       const scaleY = canvas.height / img.naturalHeight;
                   
-                      file.detections.forEach(detectionStr => {
+                      file.detections.forEach(detection => {
                           try {
                               // Skip if detection string is empty or null
-                              if (!detectionStr) return;
+                            
                               
-                              const detection = JSON.parse(detectionStr.replace(/'/g, '"'));
+                              
                               
                               // Skip if box data is missing or invalid
                               if (!detection?.box || 
