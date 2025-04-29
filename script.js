@@ -171,7 +171,7 @@ async function updatePollenCount() {
     if (isInitialLoad) {
       // Load the last 20 readings into pollenData
 
-      const first20Data = data.slice(0, 20); // Slice first 20 entries
+      const first20Data = data; // Slice first 20 entries
 
       // Reverse the data manually without using reverse()
       const reversedData = [];
@@ -219,7 +219,7 @@ async function updatePollenCount() {
 
 function updateChart() {
   // Use only the last 20 entries
-  const recentData = pollenData.slice(-20);
+  const recentData = pollenData;
   console.log(recentData);
 
   const labels = pollenData.map(entry => entry.time.toLocaleTimeString());
