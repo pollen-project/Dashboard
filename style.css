@@ -54,12 +54,12 @@ body {
   }
 
   #imageHistory {
-    max-height: 300px; /* Adjust height as needed */
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-  }
-  
+  max-height: 300px; /* Adjust height as needed */
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
   
   .image-status-top {
     position: absolute;

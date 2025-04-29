@@ -134,20 +134,21 @@ function drawDetections(file) {
 
   file.detections.forEach(detection => {
     try {
-      if (!detection?.box ||
-        detection.box.x1 == null || detection.box.x2 == null ||
-        detection.box.y1 == null || detection.box.y2 == null) {
+      const box = detection.box;
+      if (!box ||
+          box.x1 == null || box.x2 == null ||
+          box.y1 == null || box.y2 == null) {
         return;
       }
 
-      const box = detection.box;
       const x = box.x1 * scaleX;
       const y = box.y1 * scaleY;
       const width = (box.x2 - box.x1) * scaleX;
       const height = (box.y2 - box.y1) * scaleY;
 
-      boundingBoxes.push({ x, y, width, height });
-      console.log("drawing bbox:", width, height)
+      boundingBoxes.push({ x, y, width, height, confidence: detection.confidence });
+
+
     } catch (e) {
       console.warn("Invalid detection data:", detection, e);
     }
@@ -155,6 +156,7 @@ function drawDetections(file) {
 
   redrawCanvas();
 }
+
 let isInitialLoad = true;
 
 async function updatePollenCount() {
@@ -407,69 +409,12 @@ function updateButtonColor() {
   }
 }
 
+
+
 function setupCanvas() {
   const img = document.getElementById("latestImage");
   canvas = document.getElementById("boundingCanvas");
   ctx = canvas.getContext("2d");
-
-  const syncCanvasSize = () => {
-    canvas.width = img.clientWidth;
-    canvas.height = img.clientHeight;
-  };
-
-  syncCanvasSize();
-  window.addEventListener('resize', syncCanvasSize);
-  img.onload = syncCanvasSize;
-
-  canvas.addEventListener("mousedown", startDraw);
-  canvas.addEventListener("mousemove", draw);
-  canvas.addEventListener("mouseup", endDraw);
-}
-
-function startDraw(e) {
-  if (!canvasVisible) return;
-
-  isDrawing = true;
-  const rect = canvas.getBoundingClientRect();
-  startX = e.clientX - rect.left;
-  startY = e.clientY - rect.top;
-}
-
-function draw(e) {
-  if (!isDrawing) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  // Clear and redraw all previous boxes
-  redrawCanvas();
-
-  const width = x - startX;
-  const height = y - startY;
-
-  ctx.strokeStyle = "limegreen";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(startX, startY, width, height);
-}
-
-function endDraw(e) {
-  if (!isDrawing) return;
-  isDrawing = false;
-
-  const rect = canvas.getBoundingClientRect();
-  const endX = e.clientX - rect.left;
-  const endY = e.clientY - rect.top;
-
-  const box = {
-    x: Math.min(startX, endX),
-    y: Math.min(startY, endY),
-    width: Math.abs(endX - startX),
-    height: Math.abs(endY - startY)
-  };
-
-  boundingBoxes.push(box);
-  redrawCanvas();
 }
 
 function redrawCanvas() {
@@ -481,6 +426,13 @@ function redrawCanvas() {
     ctx.strokeStyle = "limegreen";
     ctx.lineWidth = 2;
     ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+    if (box.confidence !== undefined) {
+      ctx.fillStyle = "white";
+      ctx.font = "14px Arial";
+      const confText = `Conf: ${(box.confidence * 100).toFixed(1)}%`;
+      ctx.fillText(confText, box.x + 2, box.y - 5);
+    }
   }
 }
 
