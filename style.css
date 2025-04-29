@@ -26,22 +26,25 @@ body {
   
   .history-panel {
     background: #fff;
-    padding: 1.5rem;
     border-radius: 1.5rem;
     display: flex;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     max-width: 500px;
     margin: 1rem auto;
     font-family: sans-serif;
+    flex: 1;
   }
 
   .history-panel h2 {
     font-size: 1.4rem;
     font-weight: bold;
+    height: 100;
     margin-bottom: 1rem;
     color: #333;
+    
   }
   .image-wrapper {
+    height: auto;
     flex: 2;
     min-width: 300px;
     position: relative;
@@ -56,7 +59,6 @@ body {
   #imageHistory {
   max-height: 300px; /* Adjust height as needed */
   overflow-y: auto;
-  border: 1px solid #ccc;
   padding: 10px;
 }
 

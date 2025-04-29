@@ -43,6 +43,7 @@ async function loadLatestImage() {
           // Refresh history list
           updateImageHistory(data);
           updatePollenCount();
+          getAverages();
           img.onload = () => {
             drawDetections(latestImage);
           };
@@ -79,8 +80,9 @@ function updateImageHistory(imageFiles, showAll = false) {
     li.title = "Click to view this image";
 
     const timestampText = new Date(file.timestamp).toLocaleString();
-    const detectionCount = file.detections ? file.detections.length : 0;
-    const detectionText = detectionCount === 1 ? "1 detection" : `${detectionCount} detections`;
+    const detectionCount = file.detectedPollenCount ?? 0
+    const detectionText = parseFloat(detectionCount.toFixed(2));
+
 
     const dateSpan = document.createElement("span");
     dateSpan.textContent = timestampText;
@@ -318,8 +320,6 @@ async function loadFilteredImages() {
       return;
     }
 
-    const data = await res.json();
-
     if (Array.isArray(data) && data.length > 0) {
       const latestImage = data[data.length - 1];
     
@@ -442,3 +442,61 @@ function toggleBoundingBoxes() {
   redrawCanvas();
   console.log("SHOWING/REMOVING BOXES");
 }
+
+async function getAverages() {
+  try {
+    const response = await fetch('https://pollen.botondhorvath.com/api/detections?mode=daily');
+    const data = await response.json();
+
+    // Extract relevant fields: time and pollen count
+    const averages = data.map(entry => {
+      return {
+        label: entry.time.split('T')[0], // Just the date part
+        average: entry.pollenCount // or use another appropriate field if different
+      };
+    });
+
+    displayAverages(averages);
+  } catch (error) {
+    console.error("Error fetching pollen data:", error);
+    displayAverages([]);
+  }
+}
+
+
+
+function displayAverages(averages) {
+  const container = document.getElementById("averagesDisplay");
+  if (!averages.length) {
+    container.innerHTML = "No data available.";
+    return;
+  }
+
+  container.innerHTML = "<div class='pollen-container'>";
+
+  averages.forEach(avg => {
+    let colorClass = '';
+
+    // Determine the color based on the average value
+    if (avg.average < 0.3) {
+      colorClass = 'green';
+    } else if (avg.average >= 0.3 && avg.average <= 0.5) {
+      colorClass = 'yellow';
+    } else if (avg.average > 0.5) {
+      colorClass = 'red';
+    }
+
+    container.innerHTML += `
+      <div class="pollen-item ${colorClass}">
+        <div>DATE: ${avg.label}</div>
+        <div>Avg pollen: ${avg.average}</div>
+      </div>
+    `;
+  });
+
+  container.innerHTML += "</div>";
+}
+
+
+
+
