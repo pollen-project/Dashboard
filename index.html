@@ -26,21 +26,33 @@
       <!-- Left Panel -->
       <div class="side-panel">
         <section class="card">
-          <div class="filter-controls">
+          <div class="filter-controls-header">
             <h2>Image History</h2>
-            <button id="toggleButton" onclick="toggleLoadLatest()">Toggle Update</button>
+            <span>Load latest toggle</span>
+            <label class="switch">
+              <input type="checkbox" id="toggleButton" onclick="toggleLoadLatest()" checked>
+              <span class="slider round"></span>
+            </label>
           </div>
 
 
           <div class="filter-controls">
-            <label for="fromDate">From:</label>
-            <input type="datetime-local" id="fromDate">
+            <div class="filter-item">
+              <label for="fromDate">From:</label>
+              <input type="datetime-local" id="fromDate">
+            </div>
+            <div class="filter-item">
+              <label for="fromDate">Until:</label>
+              <input type="datetime-local" id="untilDate">
+              <button onclick="loadFilteredImages()">Filter</button>
+            </div>
+            
 
-            <button onclick="loadFilteredImages()">Filter</button>
+            
           </div>
 
 
-          <ul id="imageHistory"></ul>
+          <div id="imageHistory"></div>
         </section>
       </div>
 
@@ -107,6 +119,7 @@
 
 
   </main>>
+  <script src="TempHumidityGPS.js"></script>
   <script src="script.js"></script>
 </body>
 

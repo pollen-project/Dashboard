@@ -52,6 +52,14 @@ body {
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   }
+
+  #imageHistory {
+    max-height: 300px; /* Adjust height as needed */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+  
   
   .image-status-top {
     position: absolute;
@@ -113,10 +121,24 @@ body {
 .filter-controls {
     display: flex;
     flex-wrap: wrap;
+    flex-direction: column;
     gap: 0.5rem 1rem;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 1rem;
+    
   }
+
+  .filter-controls-header{
+    display: flex;
+    
+  }
+
+  .filter-item {
+    display: flex;
+    flex-direction: row; /* Align label, input, and button horizontally */
+    gap: 8px; /* Space between elements */
+    justify-content: left; /* Center the items vertically */
+  }  
 
   .filter-controls label {
     font-weight: 500;
@@ -139,7 +161,12 @@ body {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
   }
+
+
   
+  .filter-controls-header button:hover {
+    background-color: #1d4ed8;
+  }
   .filter-controls button:hover {
     background-color: #1d4ed8;
   }
