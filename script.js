@@ -79,8 +79,9 @@ function updateImageHistory(imageFiles, showAll = false) {
     li.title = "Click to view this image";
 
     const timestampText = new Date(file.timestamp).toLocaleString();
-    const detectionCount = file.detections ? file.detections.length : 0;
-    const detectionText = detectionCount === 1 ? "1 detection" : `${detectionCount} detections`;
+    const detectionCount = file.detectedPollenCount ?? 0
+    const detectionText = parseFloat(detectionCount.toFixed(2));
+
 
     const dateSpan = document.createElement("span");
     dateSpan.textContent = timestampText;
