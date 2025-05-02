@@ -12,7 +12,6 @@ body {
 
 
 
-
   #averagesDisplay{
     display: flex;
     flex-direction: row;
@@ -192,7 +191,8 @@ body {
     background: rgba(255, 255, 255, 0.85); /* semi-transparent white */
     backdrop-filter: blur(100px);           /* smooth glass effect */
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: 0px 20px 5px 3px;
+    
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
