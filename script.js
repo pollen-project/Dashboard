@@ -443,54 +443,100 @@ function toggleBoundingBoxes() {
   console.log("SHOWING/REMOVING BOXES");
 }
 
-async function getAverages() {
+async function getAverages(mode = "daily") {
   try {
-    const response = await fetch('https://pollen.botondhorvath.com/api/detections?mode=daily');
+    const response = await fetch(`https://pollen.botondhorvath.com/api/detections?mode=${mode}`);
     const data = await response.json();
 
-    // Extract relevant fields: time and pollen count
     const averages = data.map(entry => {
+      const date = new Date(entry.timestamp);
+
+      let label;
+      if (mode === "daily") {
+        // e.g., "02 May"
+        label = date.toLocaleDateString(undefined, {
+          day: '2-digit',
+          month: 'short'
+        });
+      } else {
+        // e.g., "14:00"
+        label = date.toLocaleTimeString(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+      }
+
       return {
-        label: entry.time.split('T')[0], // Just the date part
-        average: entry.pollenCount // or use another appropriate field if different
+        label,
+        average: entry.detectedPollenCount
       };
     });
 
-    displayAverages(averages);
+    displayAverages(averages, mode);
   } catch (error) {
     console.error("Error fetching pollen data:", error);
-    displayAverages([]);
+    displayAverages([], mode);
   }
+}
+
+document.getElementById("dailyBtn").addEventListener("click", () => {
+  setActiveMode("daily");
+});
+
+document.getElementById("hourlyBtn").addEventListener("click", () => {
+  setActiveMode("hourly");
+});
+
+function setActiveMode(mode) {
+  // Fetch and display new data
+  getAverages(mode);
+
+  // Toggle active button class
+  document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`${mode}Btn`).classList.add('active');
 }
 
 
 
-function displayAverages(averages) {
+function displayAverages(averages, mode = "daily") {
   const container = document.getElementById("averagesDisplay");
+  container.innerHTML = "";
+
   if (!averages.length) {
     container.innerHTML = "No data available.";
     return;
   }
 
+  const thresholds = mode === "hourly"
+    ? { low: 20, moderate: 100 }
+    : { low: 200, moderate: 500 };
+
   container.innerHTML = "<div class='pollen-container'>";
 
   averages.forEach(avg => {
     let colorClass = '';
+    let levelText = '';
 
-    // Determine the color based on the average value
-    if (avg.average < 0.3) {
+    if (avg.average < thresholds.low) {
       colorClass = 'green';
-    } else if (avg.average >= 0.3 && avg.average <= 0.5) {
+      levelText = 'LOW';
+    } else if (avg.average >= thresholds.low && avg.average <= thresholds.moderate) {
       colorClass = 'yellow';
-    } else if (avg.average > 0.5) {
+      levelText = 'MED';
+    } else {
       colorClass = 'red';
+      levelText = 'HIGH';
     }
 
     container.innerHTML += `
+    <div class="pollen-container">
+      <div class="pollen-date">${avg.label}</div>
       <div class="pollen-item ${colorClass}">
-        <div>DATE: ${avg.label}</div>
-        <div>Avg pollen: ${avg.average}</div>
+        <div class="pollen-level">${levelText}</div>
+        <div class="pollen-count">${avg.average}</div>
       </div>
+    </div>
     `;
   });
 
@@ -498,5 +544,20 @@ function displayAverages(averages) {
 }
 
 
+
+
+
+document.getElementById("togglePollenBox").addEventListener("click", function () {
+  const box = document.getElementById("pollenBox");
+  const isVisible = !box.classList.contains("hidden");
+
+  if (isVisible) {
+    box.classList.add("hidden");
+    this.textContent = "Show Pollen Info";
+  } else {
+    box.classList.remove("hidden");
+    this.textContent = "Hide Pollen Info";
+  }
+});
 
 

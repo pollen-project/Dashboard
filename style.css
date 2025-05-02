@@ -1,10 +1,121 @@
 body {
-    margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    background-color: #f5f7fa;
-    color: #333;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe, #f0f9ff);
+  color: #333;
+  min-height: 100vh;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+
+
+
+
+  #averagesDisplay{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+ 
+.pollen-item {
+  background-color: #fff;
+  width: 150px;
+  height: 100px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  text-align: center;
+}
+
+  .pollen-container{
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center ;
+  }
+
+
+  .pollen-date {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #555;
   }
   
+  .pollen-level {
+    font-weight: bold;
+    font-size: 38px;
+    margin-top: 10px;
+  }
+
+  .pollen-count {
+    font-size: 16px;
+    color: white;
+  }
+  .mode-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  
+.mode-btn:hover {
+  background-color: #e2e2e2;
+}
+  .mode-btn.active {
+    background-color: #444;
+    color: #fff;
+    border-color: #444;
+  }
+
+  .mode-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 10px 18px;
+    margin: 0 6px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border 0.3s;
+  }
+  
+  .green {
+    background: #A3C6A1;
+  }
+  
+  .yellow {
+    background:#E6D9A8;
+  }
+  
+  .red {
+    background: #D89C9C;
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    margin: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+
+
+
   .container {
     max-width: 1200px;
     margin: 2rem auto;
@@ -78,10 +189,17 @@ body {
   }
   
   .card {
-    background: white;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.85); /* semi-transparent white */
+    backdrop-filter: blur(100px);           /* smooth glass effect */
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
   }
   
   ul {
@@ -254,4 +372,38 @@ input:checked + .slider:before {
   color: white;
   font-size: 0.85rem;
   font-weight: 500;
+}
+.dropdown-container {
+  text-align: center;
+  padding-top: 40px;
+  margin-bottom: 20px;
+}
+
+.dropdown-toggle {
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.dropdown-toggle:hover {
+  background-color: #333;
+}
+
+.dropdown-box {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hidden {
+  display: none;
 }

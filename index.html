@@ -19,7 +19,33 @@
 </head>
 
 <body>
+
+
+
   <main class="container">
+    <div class="card">
+      <h1>Last update</h1> 
+
+      <center>
+        <div class="mode-toggle">
+          <button id="dailyBtn" class="mode-btn active">Daily</button>
+          <button id="hourlyBtn" class="mode-btn">Hourly</button>
+        </div>
+      </center>
+      
+    
+      <div id="averagesDisplay"></div>
+      <div class="dropdown-container">
+        <button id="togglePollenBox" class="dropdown-toggle">Show Pollen Info</button>
+      
+        <div id="pollenBox" class="dropdown-box hidden">
+          
+            <span>Historical data from pollendata</span>
+            <canvas id="pollenChart"></canvas>
+         
+        </div>
+      </div>
+    </div>
     <h1>Pollen Dashboard</h1>
 
     <div class="dashboard">
