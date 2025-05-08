@@ -82,16 +82,23 @@ body {
 
 .pollen-item {
   background-color: #fff;
-  width: 8.5em;
-  height: 6em;
+  width: 10vw;               /* Responsive width (approx 7 items per row) */
+  height: 8vw; 
+  max-width: 8.5em;          /* Prevent it from growing too large on big screens */
+  max-height: 6em;
+  min-width: 50px;           /* Minimum size to prevent overflow */
+  min-height: 60px;
+
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: 16px;
+  padding: 5px;
+  font-size: 0.9em;
   text-align: center;
+  flex-shrink: 1;
 }
 
 .side-panel{
