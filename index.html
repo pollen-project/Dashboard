@@ -101,13 +101,13 @@
         </section>
       </div>
 
-      <div style="position: relative; display: inline-block;" class="image-wrapper">
+      <div class="image-wrapper">
         <img id="latestImage" alt="Latest Pollen Image" style="width: 100%; display: block;" />
         <canvas id="boundingCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
         <p id="status" class="image-status-top">Loading image...</p>
       
         <div class="toggle-wrapper">
-          <span class="toggle-label">BBox Toggle</span>
+          <span style="padding-right: 5px;"class="toggle-label">BBox Toggle </span>
           <label class="switch">
             <input type="checkbox" id="toggleBoxes" onclick="toggleBoundingBoxes()" checked>
             <span class="slider round"></span>
