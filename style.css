@@ -1,19 +1,58 @@
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
-  background: linear-gradient(135deg, #dbeafe, #e0f2fe, #f0f9ff);
   color: #333;
   min-height: 100vh;
+  background: linear-gradient(135deg, #6e7a7d, #7db1a4, #a2b1b1);
+  background-size: 300% 300%; /* Larger area for gradient movement */
+  animation: gradientAnimation 10s ease infinite; /* Animation effect */
   background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
 }
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end; /* Align logo to the right */
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+  backdrop-filter: blur(10px); /* Adds a subtle blur for a frosted glass effect */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.header h2 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%); /* Center the <h2> horizontally */
+  font-size: 3rem; /* Adjust size as needed */
+  color: #ffffff; /* White color for the text */
+  margin: 0;
+}
+
+.header img {
+  height: 100px;  /* Adjust logo size */
+  width: auto;
+}
+
+
 
 
 
 #averagesDisplay {
   display: flex;
   flex-direction: row;
+  padding-bottom:2em;
   justify-content: center;
   gap: 2px; /* Adjust spacing between elements */
   flex-wrap: wrap; /* Optional: wrap to next line if space is tight */
@@ -53,6 +92,10 @@ body {
   align-items: center;
   font-size: 16px;
   text-align: center;
+}
+
+.side-panel{
+  padding-left: 1em;
 }
 
   .pollen-container{
@@ -120,9 +163,11 @@ body {
   }
 
   #pollen_level {
-    font-size: 18px;
     padding: 5px 10px;
     border-radius: 5px;
+    font-weight: bold;
+    font-size: 38px;
+   
   }
 
   button {
@@ -216,12 +261,12 @@ body {
   }
   
   .card {
-    background: rgba(255, 255, 255, 0.85); /* semi-transparent white */
-    backdrop-filter: blur(100px);           /* smooth glass effect */
+    background: rgba(255, 255, 255, 0.7); /* More transparent white */
+    backdrop-filter: blur(15px);           /* Slightly more subtle blur for smooth glass effect */
     border-radius: 16px;
     padding: 0px 20px 5px 3px;
-    
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow for more depth */
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   
@@ -403,7 +448,6 @@ input:checked + .slider:before {
 }
 .dropdown-container {
   text-align: center;
-  padding-top: 40px;
   margin-bottom: 20px;
 }
 

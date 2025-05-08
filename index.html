@@ -20,31 +20,22 @@
 
 <body>
 
-
+  <div class="header">
+    <h2>Project Pollen</h2>
+    <img src="Pollen_Logo.png" alt="Pollen Logo">
+  </div>
+  
 
   <main class="container">
     <div class="card">
       <h1>Current pollen estimate</h1>
+      
       <div class="pollen_estimate_container">
+        <div id="pollen_level">loading...</div> <!-- Text for pollen level -->
         <div>Particles per m³/t</div>
         <div id="pollen_estimate">loading...</div>
-        <div id="pollen_level">loading...</div> <!-- Text for pollen level -->
+        
       </div>
-    </div>
-
-
-    <div class="card">
-      <h1>Last update</h1> 
-
-      <center>
-        <div class="mode-toggle">
-          <button id="dailyBtn" class="mode-btn active">Daily</button>
-          <button id="hourlyBtn" class="mode-btn">Hourly</button>
-        </div>
-      </center>
-      
-    
-      <div id="averagesDisplay"></div>
       <div class="dropdown-container">
         <button id="togglePollenBox" class="dropdown-toggle">Show Pollen Info</button>
       
@@ -56,6 +47,21 @@
          
         </div>
       </div>
+    </div>
+
+
+    <div class="card">
+      <h1>Total pollen detections</h1> 
+
+      <center>
+        <div class="mode-toggle">
+          <button id="dailyBtn" class="mode-btn active">Daily</button>
+          <button id="hourlyBtn" class="mode-btn">Hourly</button>
+        </div>
+      </center>
+      
+    
+      <div id="averagesDisplay"></div>
     </div>
     
 <div class="card">
