@@ -1,10 +1,200 @@
 body {
-    margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    background-color: #f5f7fa;
-    color: #333;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  color: #333;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6e7a7d, #7db1a4, #a2b1b1);
+  background-size: 300% 300%; /* Larger area for gradient movement */
+  animation: gradientAnimation 10s ease infinite; /* Animation effect */
+  background-attachment: fixed;
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end; /* Align logo to the right */
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+  backdrop-filter: blur(10px); /* Adds a subtle blur for a frosted glass effect */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.header h2 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%); /* Center the <h2> horizontally */
+  font-size: 3rem; /* Adjust size as needed */
+  color: #ffffff; /* White color for the text */
+  margin: 0;
+}
+
+.header img {
+  height: 100px;  /* Adjust logo size */
+  width: auto;
+}
+
+
+
+
+
+#averagesDisplay {
+  display: flex;
+  flex-direction: row;
+  padding-bottom:2em;
+  justify-content: center;
+  gap: 15px; /* Adjust spacing between elements */
+  flex-wrap: wrap; /* Optional: wrap to next line if space is tight */
+}
+
+  .pollen_estimate_container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    color: #37474f;
+  }
+
+  #pollen_estimate {
+    font-size: 50px;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+ 
+  .pollen-item.no-data {
+    background-color: #eeeeee;
+    color: #888888;
+    border: 1px dashed #cccccc;
+  }
+
+
+.pollen-item {
+  background-color: #fff;
+  width: 10vw;               /* Responsive width (approx 7 items per row) */
+  height: 8vw; 
+  max-width: 8.5em;          /* Prevent it from growing too large on big screens */
+  max-height: 6em;
+  min-width: 50px;           /* Minimum size to prevent overflow */
+  min-height: 60px;
+
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+  font-size: 0.9em;
+  text-align: center;
+  flex-shrink: 1;
+}
+
+.side-panel{
+  padding-left: 1em;
+}
+
+  .pollen-container{
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center ;
+  }
+
+
+  .pollen-date {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #555;
   }
   
+  .pollen-level {
+    font-weight: bold;
+    font-size: 38px;
+    margin-top: 10px;
+  }
+
+  .pollen-count {
+    font-size: 16px;
+    color: white;
+  }
+  .mode-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  
+.mode-btn:hover {
+  background-color: #e2e2e2;
+}
+  .mode-btn.active {
+    background-color: #444;
+    color: #fff;
+    border-color: #444;
+  }
+
+  .mode-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 10px 18px;
+    margin: 0 6px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border 0.3s;
+  }
+  
+  .green {
+    background: #A3C6A1;
+  }
+  
+  .yellow {
+    background:#E6D9A8;
+  }
+  
+  .red {
+    background: #D89C9C;
+  }
+
+  #pollen_level {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 38px;
+   
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    margin: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #0056b3;
+  }
+
+
+
   .container {
     max-width: 1200px;
     margin: 2rem auto;
@@ -12,6 +202,7 @@ body {
   }
   
   h1 {
+    padding-top: 10px;
     text-align: center;
     font-size: 2.5rem;
     margin-bottom: 2rem;
@@ -78,10 +269,18 @@ body {
   }
   
   .card {
-    background: white;
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.7); /* More transparent white */
+    backdrop-filter: blur(15px);           /* Slightly more subtle blur for smooth glass effect */
+    border-radius: 16px;
+    padding: 0px 20px 5px 20px;
+  
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow for more depth */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
   }
   
   ul {
@@ -107,12 +306,14 @@ body {
     width: 100% !important;
     height: auto !important;
   }  
-
   #charts-container {
     display: flex;
-    justify-content: space-between;
-    gap: 20px; /* Adds some space between the two charts */
-}
+    justify-content: center; /* Center charts horizontally */
+    align-items: center;      /* Center charts vertically if height applies */
+    gap: 20px;                /* Space between the charts */
+    flex-wrap: wrap;          /* Allow wrapping on smaller screens if needed */
+  }
+  
 
 #tempChartContainer, #humidityChartContainer {
     flex: 1;
@@ -254,4 +455,37 @@ input:checked + .slider:before {
   color: white;
   font-size: 0.85rem;
   font-weight: 500;
+}
+.dropdown-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.dropdown-toggle {
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.dropdown-toggle:hover {
+  background-color: #333;
+}
+
+.dropdown-box {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hidden {
+  display: none;
 }

@@ -19,9 +19,54 @@
 </head>
 
 <body>
-  <main class="container">
-    <h1>Pollen Dashboard</h1>
 
+  <div class="header">
+    <h2>Pollen Dashboard</h2>
+    <img src="Pollen_Logo.png" alt="Pollen Logo">
+  </div>
+  
+
+  <main class="container">
+    <div class="card">
+      <h1>Current pollen estimate</h1>
+      
+      <div class="pollen_estimate_container">
+        <div id="pollen_level">loading...</div> <!-- Text for pollen level -->
+        
+        <div id="pollen_estimate">loading...</div>
+        <div>Particles per m³/t</div>
+        
+      </div>
+      <div class="dropdown-container">
+        <button id="togglePollenBox" class="dropdown-toggle">Show Pollen Info</button>
+      
+        <div id="pollenBox" class="dropdown-box hidden">
+          
+            <span>Historical data from pollendata</span>
+            <p id="pollenCount">Loading pollen count...</p>
+            <canvas id="pollenChart"></canvas>
+         
+        </div>
+      </div>
+    </div>
+
+
+    <div class="card">
+      <h1>Total pollen detections</h1> 
+
+      <center>
+        <div class="mode-toggle">
+          <button id="dailyBtn" class="mode-btn active">Daily</button>
+          <button id="hourlyBtn" class="mode-btn">Hourly</button>
+        </div>
+      </center>
+      
+    
+      <div id="averagesDisplay"></div>
+    </div>
+    
+<div class="card">
+  <h1>Pollen Dashboard</h1>
     <div class="dashboard">
       <!-- Left Panel -->
       <div class="side-panel">
@@ -69,21 +114,16 @@
           </label>
         </div>
       </div>
-      
+    </div>
       
     </div>
 
-      <!-- Pollen Count  -->
-      <h1>Pollen Count</h1>
-      <div id="pollenBox">
-        <section class="card">
-          <p id="pollenCount">Loading pollen count...</p>
-          <canvas id="pollenChart" width="400" height="200"></canvas>
-        </section>
-      </div>
+
 
       <!-- Temp & Humidity  -->
+       <div class="card">
       <h1>Temprature & Humidity </h1>
+    
       <div id="charts-container">
 
 
@@ -103,8 +143,10 @@
           </section>
         </div>
       </div>
+    </div>
 
       <!-- GPS -->
+      <div class="card">
       <h1>GPS </h1>
 
       <div id="gpsCardContainer" >
@@ -114,7 +156,7 @@
           <div id="map" style="height: 400px;"></div> <!-- Map container -->
         </section>
       </div>
-
+    </div>
 
 
 

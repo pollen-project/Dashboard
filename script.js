@@ -43,6 +43,7 @@ async function loadLatestImage() {
           // Refresh history list
           updateImageHistory(data);
           updatePollenCount();
+          getAverages();
           img.onload = () => {
             drawDetections(latestImage);
           };
@@ -181,13 +182,13 @@ async function updatePollenCount() {
       }
 
       pollenData.splice(0, pollenData.length, ...reversedData.map(entry => {
-        const rawCount = entry.detectedPollenCount;
+        const rawCount = entry.detectedPollenCount*7.1;
 
 
         const count = !isNaN(Number(rawCount)) ? Number(rawCount) : 0; // Fallback to 0 if invalid
         return {
           time: new Date(entry.timestamp),
-          count: count
+          count: count 
         };
       }));
       isInitialLoad = false;
@@ -313,15 +314,16 @@ async function loadFilteredImages() {
   console.log("Fetching from:", url.toString());
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      status.textContent = `Error: API responded with status ${res.status}`;
-      return;
-    }
+    const response = await fetch(url);
 
-    const data = await res.json();
+  if (!response.ok) {
+    status.textContent = `Error: API responded with status ${response.status}`;
+    return;
+  }
 
-    if (Array.isArray(data) && data.length > 0) {
+  const data = await response.json();
+
+  if (Array.isArray(data) && data.length > 0) {
       const latestImage = data[data.length - 1];
     
       if (latestImage.image !== lastImageFilename) {
@@ -358,6 +360,7 @@ window.onload = function () {
 
   updateTempHumidityChart();
 
+  fetchPollenEstimate();
   // Set intervals for auto-refreshing data
 
   setInterval(updateTempHumidityChart, 30000);
@@ -443,3 +446,203 @@ function toggleBoundingBoxes() {
   redrawCanvas();
   console.log("SHOWING/REMOVING BOXES");
 }
+
+async function getAverages(mode = "daily") {
+  try {
+    const response = await fetch(`https://pollen.botondhorvath.com/api/detections?mode=${mode}`);
+    const data = await response.json();
+
+    const averages = data.map(entry => {
+      const date = new Date(entry.timestamp);
+
+      let label;
+      if (mode === "daily") {
+        // e.g., "02 May"
+        label = date.toLocaleDateString(undefined, {
+          day: '2-digit',
+          month: 'short'
+        });
+      } else {
+        // e.g., "14:00"
+        label = date.toLocaleTimeString(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+      }
+
+      return {
+        label,
+        average: entry.detectedPollenCount
+      };
+    });
+
+    displayAverages(averages, mode);
+  } catch (error) {
+    console.error("Error fetching pollen data:", error);
+    displayAverages([], mode);
+  }
+}
+
+document.getElementById("dailyBtn").addEventListener("click", () => {
+  setActiveMode("daily");
+});
+
+document.getElementById("hourlyBtn").addEventListener("click", () => {
+  setActiveMode("hourly");
+});
+
+function setActiveMode(mode) {
+  // Fetch and display new data
+  getAverages(mode);
+
+  // Toggle active button class
+  document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`${mode}Btn`).classList.add('active');
+}
+
+
+
+function displayAverages(averages, mode = "daily") {
+  const container = document.getElementById("averagesDisplay");
+  container.innerHTML = "";
+
+  const thresholds = mode === "hourly"
+    ? { low: 20, moderate: 100 }
+    : { low: 200, moderate: 500 };
+
+  // Generate labels for the last 7 days or hours
+  const labels = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(now);
+    if (mode === "daily") {
+      date.setDate(now.getDate() - i);
+      labels.push(date.toLocaleDateString(undefined, {
+        day: '2-digit',
+        month: 'short'
+      }));
+    } else {
+      date.setHours(now.getHours() - i);
+      labels.push(date.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }));
+    }
+  }
+
+  // Map existing averages to their label
+  const dataMap = Object.fromEntries(averages.map(a => [a.label, a]));
+
+  container.innerHTML = "<div class='pollen-container-wrapper'>";
+
+  labels.forEach(label => {
+    const avg = dataMap[label];
+
+    if (avg) {
+      let colorClass = '';
+      let levelText = '';
+
+      if (avg.average < thresholds.low) {
+        colorClass = 'green';
+        levelText = 'LOW';
+      } else if (avg.average <= thresholds.moderate) {
+        colorClass = 'yellow';
+        levelText = 'MED';
+      } else {
+        colorClass = 'red';
+        levelText = 'HIGH';
+      }
+
+      container.innerHTML += `
+        <div class="pollen-container">
+          <div class="pollen-date">${avg.label}</div>
+          <div class="pollen-item ${colorClass}">
+            <div class="pollen-level">${levelText}</div>
+            <div class="pollen-count">${avg.average}</div>
+          </div>
+        </div>
+      `;
+    } else {
+      container.innerHTML += `
+        <div class="pollen-container">
+          <div class="pollen-date">${label}</div>
+          <div class="pollen-item no-data">
+            <div class="pollen-level">NO DATA</div>
+            <div class="pollen-count">--</div>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  container.innerHTML += "</div>";
+}
+
+
+
+
+
+
+
+
+document.getElementById("togglePollenBox").addEventListener("click", function () {
+  const box = document.getElementById("pollenBox");
+  const isVisible = !box.classList.contains("hidden");
+
+  if (isVisible) {
+    box.classList.add("hidden");
+    this.textContent = "Show Pollen Info";
+  } else {
+    box.classList.remove("hidden");
+    this.textContent = "Hide Pollen Info";
+  }
+});
+
+async function fetchPollenEstimate() {
+  try {
+    const response = await fetch('https://pollen.botondhorvath.com/api/history?device=pollen3');
+    const data = await response.json();
+
+    // Take the latest 10 entries
+    const latest = data;
+
+    // Process values
+    const multiplied = latest.map(entry => entry.detectedPollenCount * 7.1);
+    const average = multiplied.reduce((sum, val) => sum + val, 0) / multiplied.length;
+
+    // Update the UI
+    document.getElementById('pollen_estimate').textContent = average.toFixed(2);
+
+    // Determine the pollen level and apply color
+    const pollenLevelElement = document.getElementById('pollen_level');
+
+    let levelText = '';
+    let levelClass = '';
+
+    if (average < 15) {
+      levelText = 'LOW';
+      levelClass = 'green';
+    } else if (average >= 15 && average <= 50) {
+      levelText = 'MED';
+      levelClass = 'yellow';
+    } else {
+      levelText = 'HIGH';
+      levelClass = 'red';
+    }
+
+    // Update the pollen level display with the appropriate text and color
+    pollenLevelElement.textContent = levelText;
+    pollenLevelElement.className = levelClass;
+
+  } catch (error) {
+    console.error("Failed to fetch or process pollen data:", error);
+    document.getElementById('pollen_estimate').textContent = "Error";
+    document.getElementById('pollen_level').textContent = "Error";
+  }
+}
+
+
+
+
