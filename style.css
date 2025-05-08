@@ -54,7 +54,7 @@ body {
   flex-direction: row;
   padding-bottom:2em;
   justify-content: center;
-  gap: 2px; /* Adjust spacing between elements */
+  gap: 15px; /* Adjust spacing between elements */
   flex-wrap: wrap; /* Optional: wrap to next line if space is tight */
 }
 
@@ -195,6 +195,7 @@ body {
   }
   
   h1 {
+    padding-top: 10px;
     text-align: center;
     font-size: 2.5rem;
     margin-bottom: 2rem;
@@ -264,7 +265,7 @@ body {
     background: rgba(255, 255, 255, 0.7); /* More transparent white */
     backdrop-filter: blur(15px);           /* Slightly more subtle blur for smooth glass effect */
     border-radius: 16px;
-    padding: 0px 20px 5px 3px;
+    padding: 0px 20px 5px 20px;
   
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow for more depth */
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -298,12 +299,14 @@ body {
     width: 100% !important;
     height: auto !important;
   }  
-
   #charts-container {
     display: flex;
-    justify-content: space-between;
-    gap: 20px; /* Adds some space between the two charts */
-}
+    justify-content: center; /* Center charts horizontally */
+    align-items: center;      /* Center charts vertically if height applies */
+    gap: 20px;                /* Space between the charts */
+    flex-wrap: wrap;          /* Allow wrapping on smaller screens if needed */
+  }
+  
 
 #tempChartContainer, #humidityChartContainer {
     flex: 1;
