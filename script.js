@@ -182,13 +182,13 @@ async function updatePollenCount() {
       }
 
       pollenData.splice(0, pollenData.length, ...reversedData.map(entry => {
-        const rawCount = entry.detectedPollenCount;
+        const rawCount = entry.detectedPollenCount*7.1;
 
 
         const count = !isNaN(Number(rawCount)) ? Number(rawCount) : 0; // Fallback to 0 if invalid
         return {
           time: new Date(entry.timestamp),
-          count: count
+          count: count 
         };
       }));
       isInitialLoad = false;
@@ -314,13 +314,16 @@ async function loadFilteredImages() {
   console.log("Fetching from:", url.toString());
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      status.textContent = `Error: API responded with status ${res.status}`;
-      return;
-    }
+    const response = await fetch(url);
 
-    if (Array.isArray(data) && data.length > 0) {
+  if (!response.ok) {
+    status.textContent = `Error: API responded with status ${response.status}`;
+    return;
+  }
+
+  const data = await response.json();
+
+  if (Array.isArray(data) && data.length > 0) {
       const latestImage = data[data.length - 1];
     
       if (latestImage.image !== lastImageFilename) {
@@ -357,6 +360,7 @@ window.onload = function () {
 
   updateTempHumidityChart();
 
+  fetchPollenEstimate();
   // Set intervals for auto-refreshing data
 
   setInterval(updateTempHumidityChart, 30000);
@@ -503,45 +507,81 @@ function displayAverages(averages, mode = "daily") {
   const container = document.getElementById("averagesDisplay");
   container.innerHTML = "";
 
-  if (!averages.length) {
-    container.innerHTML = "No data available.";
-    return;
-  }
-
   const thresholds = mode === "hourly"
     ? { low: 20, moderate: 100 }
     : { low: 200, moderate: 500 };
 
-  container.innerHTML = "<div class='pollen-container'>";
-
-  averages.forEach(avg => {
-    let colorClass = '';
-    let levelText = '';
-
-    if (avg.average < thresholds.low) {
-      colorClass = 'green';
-      levelText = 'LOW';
-    } else if (avg.average >= thresholds.low && avg.average <= thresholds.moderate) {
-      colorClass = 'yellow';
-      levelText = 'MED';
+  // Generate labels for the last 7 days or hours
+  const labels = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(now);
+    if (mode === "daily") {
+      date.setDate(now.getDate() - i);
+      labels.push(date.toLocaleDateString(undefined, {
+        day: '2-digit',
+        month: 'short'
+      }));
     } else {
-      colorClass = 'red';
-      levelText = 'HIGH';
+      date.setHours(now.getHours() - i);
+      labels.push(date.toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }));
     }
+  }
 
-    container.innerHTML += `
-    <div class="pollen-container">
-      <div class="pollen-date">${avg.label}</div>
-      <div class="pollen-item ${colorClass}">
-        <div class="pollen-level">${levelText}</div>
-        <div class="pollen-count">${avg.average}</div>
-      </div>
-    </div>
-    `;
+  // Map existing averages to their label
+  const dataMap = Object.fromEntries(averages.map(a => [a.label, a]));
+
+  container.innerHTML = "<div class='pollen-container-wrapper'>";
+
+  labels.forEach(label => {
+    const avg = dataMap[label];
+
+    if (avg) {
+      let colorClass = '';
+      let levelText = '';
+
+      if (avg.average < thresholds.low) {
+        colorClass = 'green';
+        levelText = 'LOW';
+      } else if (avg.average <= thresholds.moderate) {
+        colorClass = 'yellow';
+        levelText = 'MED';
+      } else {
+        colorClass = 'red';
+        levelText = 'HIGH';
+      }
+
+      container.innerHTML += `
+        <div class="pollen-container">
+          <div class="pollen-date">${avg.label}</div>
+          <div class="pollen-item ${colorClass}">
+            <div class="pollen-level">${levelText}</div>
+            <div class="pollen-count">${avg.average}</div>
+          </div>
+        </div>
+      `;
+    } else {
+      container.innerHTML += `
+        <div class="pollen-container">
+          <div class="pollen-date">${label}</div>
+          <div class="pollen-item no-data">
+            <div class="pollen-level">NO DATA</div>
+            <div class="pollen-count">--</div>
+          </div>
+        </div>
+      `;
+    }
   });
 
   container.innerHTML += "</div>";
 }
+
+
+
 
 
 
@@ -559,5 +599,50 @@ document.getElementById("togglePollenBox").addEventListener("click", function ()
     this.textContent = "Hide Pollen Info";
   }
 });
+
+async function fetchPollenEstimate() {
+  try {
+    const response = await fetch('https://pollen.botondhorvath.com/api/history?device=pollen3');
+    const data = await response.json();
+
+    // Take the latest 10 entries
+    const latest = data;
+
+    // Process values
+    const multiplied = latest.map(entry => entry.detectedPollenCount * 7.1);
+    const average = multiplied.reduce((sum, val) => sum + val, 0) / multiplied.length;
+
+    // Update the UI
+    document.getElementById('pollen_estimate').textContent = average.toFixed(2);
+
+    // Determine the pollen level and apply color
+    const pollenLevelElement = document.getElementById('pollen_level');
+
+    let levelText = '';
+    let levelClass = '';
+
+    if (average < 15) {
+      levelText = 'LOW';
+      levelClass = 'green';
+    } else if (average >= 15 && average <= 50) {
+      levelText = 'MED';
+      levelClass = 'yellow';
+    } else {
+      levelText = 'HIGH';
+      levelClass = 'red';
+    }
+
+    // Update the pollen level display with the appropriate text and color
+    pollenLevelElement.textContent = levelText;
+    pollenLevelElement.className = levelClass;
+
+  } catch (error) {
+    console.error("Failed to fetch or process pollen data:", error);
+    document.getElementById('pollen_estimate').textContent = "Error";
+    document.getElementById('pollen_level').textContent = "Error";
+  }
+}
+
+
 
 

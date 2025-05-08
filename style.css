@@ -11,18 +11,40 @@ body {
 
 
 
+#averagesDisplay {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 2px; /* Adjust spacing between elements */
+  flex-wrap: wrap; /* Optional: wrap to next line if space is tight */
+}
 
-  #averagesDisplay{
+  .pollen_estimate_container {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    color: #37474f;
   }
 
+  #pollen_estimate {
+    font-size: 50px;
+    font-weight: bold;
+    margin: 10px 0;
+  }
  
+  .pollen-item.no-data {
+    background-color: #eeeeee;
+    color: #888888;
+    border: 1px dashed #cccccc;
+  }
+
+
 .pollen-item {
   background-color: #fff;
-  width: 150px;
-  height: 100px;
+  width: 8.5em;
+  height: 6em;
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
@@ -95,6 +117,12 @@ body {
   
   .red {
     background: #D89C9C;
+  }
+
+  #pollen_level {
+    font-size: 18px;
+    padding: 5px 10px;
+    border-radius: 5px;
   }
 
   button {
